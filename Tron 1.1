@@ -64,6 +64,22 @@
             font-size: 1.5rem;
             text-shadow: 0 0 10px currentColor;
         }
+        
+        .invulnerability-indicator {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            display: none;
+            z-index: 1000;
+        }
         .player1-score { color: #00ffff; }
         .player2-score { color: #ff4100; }
         .player3-score { color: #ff0000; }
@@ -275,6 +291,10 @@
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
     </div>
+    
+    <div id="invulnerabilityIndicator" class="invulnerability-indicator">
+        INVULNERABLE: <span id="invulnerabilityTime">3.0</span>s
+    </div>
 
     <!-- Three.js and Post-processing scripts -->
     <script type="importmap">
@@ -341,6 +361,8 @@
         const backToMenuButton = document.getElementById('backToMenuButton');
         const scoreContainer = document.getElementById('scoreContainer');
         const mapSelect = document.getElementById('mapSelect');
+        const invulnerabilityIndicator = document.getElementById('invulnerabilityIndicator');
+        const invulnerabilityTime = document.getElementById('invulnerabilityTime');
         const scoreElems = [
             document.getElementById('player1Score'),
             document.getElementById('player2Score'),
@@ -602,6 +624,12 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
+                // Invulnerability system
+                this.isInvulnerable = false;
+                this.invulnerabilityTimer = 0;
+                this.invulnerabilityDuration = 3000; // 3 seconds in milliseconds
+                this.lightWall = null;
+                
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
@@ -616,10 +644,76 @@
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
+                
+                // Activate invulnerability on spawn
+                this.activateInvulnerability();
+            }
+            
+            activateInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = Date.now();
+                this.createLightWall();
+            }
+            
+            createLightWall() {
+                // Remove existing light wall if any
+                if (this.lightWall) {
+                    scene.remove(this.lightWall);
+                }
+                
+                // Create a cylindrical light wall around the player
+                const wallGeometry = new THREE.CylinderGeometry(3, 3, 2, 16);
+                const wallMaterial = new THREE.MeshStandardMaterial({
+                    color: this.color,
+                    emissive: this.color,
+                    emissiveIntensity: 0.8,
+                    transparent: true,
+                    opacity: 0.6,
+                    side: THREE.DoubleSide,
+                    toneMapped: false
+                });
+                
+                this.lightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+                this.lightWall.position.copy(this.mesh.position);
+                this.lightWall.position.y = 1;
+                this.lightWall.userData.owner = this;
+                
+                scene.add(this.lightWall);
+            }
+            
+            updateLightWall() {
+                if (this.lightWall && this.isInvulnerable) {
+                    this.lightWall.position.copy(this.mesh.position);
+                    this.lightWall.position.y = 1;
+                    
+                    // Pulsing effect
+                    const time = Date.now() * 0.005;
+                    this.lightWall.material.emissiveIntensity = 0.8 + Math.sin(time) * 0.4;
+                }
+            }
+            
+            checkInvulnerability() {
+                if (this.isInvulnerable) {
+                    const currentTime = Date.now();
+                    if (currentTime - this.invulnerabilityTimer >= this.invulnerabilityDuration) {
+                        this.isInvulnerable = false;
+                        this.removeLightWall();
+                    }
+                }
+            }
+            
+            removeLightWall() {
+                if (this.lightWall) {
+                    scene.remove(this.lightWall);
+                    this.lightWall = null;
+                }
             }
 
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
+                
+                // Check invulnerability timer
+                this.checkInvulnerability();
                 
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
@@ -631,6 +725,9 @@
                 
                 this.createTrail();
                 this.checkCollisions(opponents);
+                
+                // Update light wall position and effects
+                this.updateLightWall();
             }
             
             updateAI(opponents) {
@@ -749,7 +846,16 @@
                 for (const opponent of allPlayers) {
                     if (opponent.id !== this.id && opponent.isAlive) {
                         if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
-                            this.die(); opponent.die(); return;
+                            // If invulnerable, only collide but don't die
+                            if (this.isInvulnerable || opponent.isInvulnerable) {
+                                // Create a collision effect but don't kill players
+                                this.handleInvulnerableCollision(opponent);
+                                return;
+                            } else {
+                                this.die(); 
+                                opponent.die(); 
+                                return;
+                            }
                         }
                     }
                 }
@@ -757,7 +863,14 @@
                 const headPos = this.mesh.position;
                 const halfSize = gameSize / 2;
                 if (Math.abs(headPos.x) > halfSize || Math.abs(headPos.z) > halfSize) {
-                    this.die(); return;
+                    // If invulnerable, bounce back instead of dying
+                    if (this.isInvulnerable) {
+                        this.handleBoundaryBounce(headPos, halfSize);
+                        return;
+                    } else {
+                        this.die(); 
+                        return;
+                    }
                 }
                 
                 const collisionBox = this.mesh.getObjectByName("collisionBox");
@@ -772,16 +885,59 @@
 
                         const obstacleBox = new THREE.Box3().setFromObject(obstacle);
                         if (playerBox.intersectsBox(obstacleBox)) {
-                            this.die();
-                            return;
+                            // If invulnerable, bounce back instead of dying
+                            if (this.isInvulnerable) {
+                                this.handleObstacleBounce(obstacle);
+                                return;
+                            } else {
+                                this.die();
+                                return;
+                            }
                         }
                     }
                 }
+            }
+            
+            handleInvulnerableCollision(opponent) {
+                // Create a visual collision effect
+                const collisionPos = this.mesh.position.clone().add(opponent.mesh.position).multiplyScalar(0.5);
+                createCollisionEffect(collisionPos, this.color);
+                
+                // Bounce both players back slightly
+                const bounceDirection = this.mesh.position.clone().sub(opponent.mesh.position).normalize();
+                this.mesh.position.add(bounceDirection.multiplyScalar(2));
+                opponent.mesh.position.sub(bounceDirection.multiplyScalar(2));
+            }
+            
+            handleBoundaryBounce(headPos, halfSize) {
+                // Bounce back from boundaries when invulnerable
+                if (Math.abs(headPos.x) > halfSize) {
+                    this.mesh.position.x = Math.sign(headPos.x) * (halfSize - 1);
+                }
+                if (Math.abs(headPos.z) > halfSize) {
+                    this.mesh.position.z = Math.sign(headPos.z) * (halfSize - 1);
+                }
+                
+                // Create boundary bounce effect
+                createBoundaryBounceEffect(this.mesh.position, this.color);
+            }
+            
+            handleObstacleBounce(obstacle) {
+                // Bounce back from obstacles when invulnerable
+                const obstaclePos = obstacle.position;
+                const bounceDirection = this.mesh.position.clone().sub(obstaclePos).normalize();
+                this.mesh.position.add(bounceDirection.multiplyScalar(3));
+                
+                // Create obstacle bounce effect
+                createObstacleBounceEffect(this.mesh.position, this.color);
             }
 
             die() {
                 if (!this.isAlive) return;
                 this.isAlive = false;
+                
+                // Remove light wall when player dies
+                this.removeLightWall();
                 
                 if (this.id === 0) { // Only show popups for the human player
                     deathMessage.classList.remove('hidden');
@@ -795,6 +951,123 @@
                 scene.remove(this.mesh);
                 checkWinCondition();
             }
+        }
+        
+        function createCollisionEffect(position, color) {
+            // Create a small explosion-like effect for invulnerable collisions
+            const particleCount = 8;
+            const particles = new THREE.Group();
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particleGeo = new THREE.SphereGeometry(0.1, 8, 6);
+                const particleMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 2.0,
+                    toneMapped: false
+                });
+                
+                const particle = new THREE.Mesh(particleGeo, particleMat);
+                particle.position.copy(position);
+                
+                // Random direction
+                const angle = (i / particleCount) * Math.PI * 2;
+                const radius = 1 + Math.random() * 2;
+                particle.position.x += Math.cos(angle) * radius;
+                particle.position.z += Math.sin(angle) * radius;
+                particle.position.y += Math.random() * 2;
+                
+                particles.add(particle);
+            }
+            
+            scene.add(particles);
+            
+            // Remove particles after animation
+            setTimeout(() => {
+                scene.remove(particles);
+                particles.children.forEach(child => {
+                    child.geometry.dispose();
+                    child.material.dispose();
+                });
+            }, 1000);
+        }
+        
+        function createBoundaryBounceEffect(position, color) {
+            // Create a ripple effect for boundary bounces
+            const rippleGeo = new THREE.RingGeometry(0.5, 2, 16);
+            const rippleMat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 1.5,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide,
+                toneMapped: false
+            });
+            
+            const ripple = new THREE.Mesh(rippleGeo, rippleMat);
+            ripple.position.copy(position);
+            ripple.position.y = 0.1;
+            ripple.rotation.x = -Math.PI / 2;
+            
+            scene.add(ripple);
+            
+            // Animate ripple expansion
+            let scale = 1;
+            const animateRipple = () => {
+                scale += 0.1;
+                ripple.scale.set(scale, scale, scale);
+                ripple.material.opacity = 0.8 - (scale - 1) * 0.2;
+                
+                if (scale < 3) {
+                    requestAnimationFrame(animateRipple);
+                } else {
+                    scene.remove(ripple);
+                    ripple.geometry.dispose();
+                    ripple.material.dispose();
+                }
+            };
+            animateRipple();
+        }
+        
+        function createObstacleBounceEffect(position, color) {
+            // Create a spark effect for obstacle bounces
+            const sparkCount = 6;
+            const sparks = new THREE.Group();
+            
+            for (let i = 0; i < sparkCount; i++) {
+                const sparkGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8);
+                const sparkMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 3.0,
+                    toneMapped: false
+                });
+                
+                const spark = new THREE.Mesh(sparkGeo, sparkMat);
+                spark.position.copy(position);
+                
+                // Random direction and rotation
+                const angle = (i / sparkCount) * Math.PI * 2;
+                const radius = 1.5 + Math.random() * 1;
+                spark.position.x += Math.cos(angle) * radius;
+                spark.position.z += Math.sin(angle) * radius;
+                spark.position.y += Math.random() * 1;
+                spark.rotation.z = Math.random() * Math.PI;
+                
+                sparks.add(spark);
+            }
+            
+            scene.add(sparks);
+            
+            // Remove sparks after animation
+            setTimeout(() => {
+                scene.remove(sparks);
+                sparks.children.forEach(child => {
+                    child.geometry.dispose();
+                    child.material.dispose();
+                });
+            }, 800);
         }
         
         function createExplosion(position, color) {
@@ -953,8 +1226,16 @@
                 });
             });
             announcements = [];
-            players.forEach(p => scene.remove(p.mesh));
+            
+            // Clean up players and their light walls
+            players.forEach(p => {
+                if (p.lightWall) {
+                    p.removeLightWall();
+                }
+                scene.remove(p.mesh);
+            });
             players = [];
+            
             gameWinner = null;
             spectatorTarget = null;
             deathMessage.classList.add('hidden');
@@ -1128,6 +1409,31 @@
             // Update score colors based on selected colors
             updateScoreColors();
         }
+        
+        function updateInvulnerabilityIndicator() {
+            const humanPlayer = players.find(p => p.id === 0);
+            if (humanPlayer && humanPlayer.isAlive && humanPlayer.isInvulnerable) {
+                const remainingTime = Math.max(0, (humanPlayer.invulnerabilityDuration - (Date.now() - humanPlayer.invulnerabilityTimer)) / 1000);
+                invulnerabilityTime.textContent = remainingTime.toFixed(1);
+                invulnerabilityIndicator.style.display = 'block';
+                
+                // Change color based on remaining time
+                if (remainingTime > 2) {
+                    invulnerabilityIndicator.style.borderColor = '#00ff00';
+                    invulnerabilityIndicator.style.color = '#00ff00';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #00ff00';
+                } else if (remainingTime > 1) {
+                    invulnerabilityIndicator.style.borderColor = '#ffff00';
+                    invulnerabilityIndicator.style.color = '#ffff00';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ffff00';
+                } else {
+                    invulnerabilityIndicator.style.color = '#ff0000';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ff0000';
+                }
+            } else {
+                invulnerabilityIndicator.style.display = 'none';
+            }
+        }
 
         function updateScoreColors() {
             // Convert hex to CSS color
@@ -1289,6 +1595,7 @@
             updateTrails();
             updateExplosions();
             updateAnnouncements();
+            updateInvulnerabilityIndicator();
             
             updateCamera();
             composer.render();
