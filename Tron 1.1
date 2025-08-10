@@ -182,6 +182,12 @@
         #debugScreen .space-y-2::-webkit-scrollbar-thumb:hover {
             background: #ffffff;
         }
+        
+        /* Invulnerability pulse animation */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body>
@@ -199,6 +205,7 @@
             </div>
             <p class="text-xs text-cyan-200 mb-4">Press 'C' to cycle spectators when eliminated.</p>
             <p class="text-xs text-cyan-200 mb-4">Press 'I' to toggle debug screen.</p>
+            <p class="text-xs text-cyan-200 mb-4">Press 'V' to activate invulnerability (5s).</p>
             
             <!-- Map Selection -->
             <div>
@@ -307,6 +314,10 @@
                     <strong>Player Details:</strong>
                     <div id="debugPlayerDetails" class="ml-2 space-y-1"></div>
                 </div>
+                <div class="border-t border-cyan-500 pt-2 mt-2">
+                    <strong>Invulnerability:</strong>
+                    <div id="debugInvulnerability" class="ml-2 space-y-1"></div>
+                </div>
             </div>
             <div class="mt-4 text-xs text-cyan-200">
                 Press 'I' again to hide
@@ -413,6 +424,7 @@
         const debugWindowSize = document.getElementById('debugWindowSize');
         const debugRendererInfo = document.getElementById('debugRendererInfo');
         const debugPlayerDetails = document.getElementById('debugPlayerDetails');
+        const debugInvulnerability = document.getElementById('debugInvulnerability');
         
         // Debug variables
         let debugVisible = false;
@@ -674,6 +686,11 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
+                // Invulnerability properties
+                this.isInvulnerable = false;
+                this.invulnerabilityTimer = 0;
+                this.invulnerabilityDuration = 300; // 5 seconds at 60fps
+                
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
@@ -684,14 +701,54 @@
 
             reset() {
                 this.isAlive = true;
+                this.isInvulnerable = false;
+                this.invulnerabilityTimer = 0;
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
             }
 
+            activateInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = this.invulnerabilityDuration;
+                console.log(`Player ${this.id + 1} invulnerability activated - ${this.invulnerabilityDuration / 60} seconds`);
+            }
+
+            updateInvulnerability() {
+                if (this.isInvulnerable && this.invulnerabilityTimer > 0) {
+                    this.invulnerabilityTimer--;
+                    
+                    // Add pulsing effect when invulnerable
+                    if (this.visuals) {
+                        const pulseIntensity = 0.5 + 0.5 * Math.sin(this.invulnerabilityTimer * 0.2);
+                        this.visuals.children.forEach(child => {
+                            if (child.material && child.material.emissiveIntensity !== undefined) {
+                                child.material.emissiveIntensity = pulseIntensity;
+                            }
+                        });
+                    }
+                    
+                    if (this.invulnerabilityTimer <= 0) {
+                        this.isInvulnerable = false;
+                        console.log(`Player ${this.id + 1} invulnerability expired`);
+                        // Reset visual effects
+                        if (this.visuals) {
+                            this.visuals.children.forEach(child => {
+                                if (child.material && child.material.emissiveIntensity !== undefined) {
+                                    child.material.emissiveIntensity = 1.0;
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
+                
+                // Update invulnerability state
+                this.updateInvulnerability();
                 
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
@@ -780,6 +837,11 @@
             }
 
             createTrail() {
+                // Don't create trails when invulnerable
+                if (this.isInvulnerable) {
+                    return;
+                }
+                
                 // Custom brightness for each color
                 let intensity = 2.0; // Default
                 const colorHex = this.color.getHex();
@@ -818,6 +880,11 @@
             }
 
             checkCollisions(allPlayers) {
+                // Skip collision detection when invulnerable
+                if (this.isInvulnerable) {
+                    return;
+                }
+                
                 for (const opponent of allPlayers) {
                     if (opponent.id !== this.id && opponent.isAlive) {
                         if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
@@ -1081,6 +1148,7 @@
 
             players.forEach(p => p.reset());
             updateScores();
+            updateScoreDisplay();
             
             gameState = 'PLAYING';
             gameOverMenu.classList.add('hidden');
@@ -1210,6 +1278,27 @@
             scoreElems[2].style.color = hexToCSS(p3ColorValue);
             scoreElems[3].style.color = hexToCSS(p4ColorValue);
         }
+
+        function updateScoreDisplay() {
+            // Update score colors
+            updateScoreColors();
+            
+            // Update invulnerability indicators
+            players.forEach((player, index) => {
+                if (scoreElems[index]) {
+                    const scoreText = scoreElems[index].textContent;
+                    if (player.isInvulnerable) {
+                        scoreElems[index].textContent = scoreText.replace(/🛡️?$/, '') + ' 🛡️';
+                        scoreElems[index].style.textShadow = '0 0 20px #ffff00, 0 0 30px #ffff00';
+                        scoreElems[index].style.animation = 'pulse 0.5s ease-in-out infinite alternate';
+                    } else {
+                        scoreElems[index].textContent = scoreText.replace(/🛡️?$/, '');
+                        scoreElems[index].style.textShadow = '0 0 10px currentColor';
+                        scoreElems[index].style.animation = 'none';
+                    }
+                }
+            });
+        }
         
         function updateTrails() {
             for (let i = trails.length - 1; i >= 0; i--) {
@@ -1237,6 +1326,7 @@
                 case 'numpad6': case '6': keys.p4_right = true; break;
                 case 'c': cycleSpectator(); break;
                 case 'i': toggleDebugScreen(); break;
+                case 'v': activatePlayerInvulnerability(); break;
             }
         }
         function onKeyUp(event) {
@@ -1378,19 +1468,45 @@
             let playerDetailsHTML = '';
             players.forEach((player, index) => {
                 const status = player.isAlive ? '🟢' : '🔴';
+                const invulnStatus = player.isInvulnerable ? '🛡️' : '';
                 const pos = player.mesh ? player.mesh.position : { x: 0, y: 0, z: 0 };
                 const vel = player.velocity ? player.velocity : { x: 0, y: 0, z: 0 };
                 const type = player.isAI ? 'AI' : 'Human';
                 
                 playerDetailsHTML += `
                     <div class="text-xs">
-                        <strong>P${index + 1} (${type}):</strong> ${status} 
+                        <strong>P${index + 1} (${type}):</strong> ${status} ${invulnStatus}
                         Pos: (${pos.x.toFixed(1)}, ${pos.z.toFixed(1)}) 
                         Vel: (${vel.x.toFixed(1)}, ${vel.z.toFixed(1)})
                     </div>
                 `;
             });
             debugPlayerDetails.innerHTML = playerDetailsHTML;
+            
+            // Update invulnerability info
+            let invulnHTML = '';
+            players.forEach((player, index) => {
+                if (player.isInvulnerable) {
+                    const timeLeft = (player.invulnerabilityTimer / 60).toFixed(1);
+                    invulnHTML += `<div class="text-xs text-yellow-400">P${index + 1}: ${timeLeft}s remaining</div>`;
+                }
+            });
+            if (invulnHTML === '') {
+                invulnHTML = '<div class="text-xs text-gray-400">No active invulnerability</div>';
+            }
+            debugInvulnerability.innerHTML = invulnHTML;
+        }
+
+        function activatePlayerInvulnerability() {
+            if (gameState !== 'PLAYING') return;
+            
+            const humanPlayer = players.find(p => p.id === 0 && p.isAlive);
+            if (humanPlayer) {
+                humanPlayer.activateInvulnerability();
+                console.log('Invulnerability activated for Player 1 - 5 seconds of invulnerability');
+            } else {
+                console.log('No human player found or player is not alive');
+            }
         }
 
         function animate() {
@@ -1418,6 +1534,11 @@
             updateCamera();
             composer.render();
 
+            // Update score display
+            if (gameState === 'PLAYING') {
+                updateScoreDisplay();
+            }
+            
             // Update debug info if visible
             if (debugVisible) {
                 updateDebugInfo();
