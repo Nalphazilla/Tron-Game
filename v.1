@@ -116,6 +116,17 @@
             outline: none;
             box-shadow: 0 0 5px #00ffff;
         }
+        .color-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .color-preview {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            border: 1px solid #00ffff;
+        }
     </style>
 </head>
 <body>
@@ -149,7 +160,7 @@
                     <option value="pvp">Player vs Player</option>
                     <option value="pva">Player vs AI</option>
                     <option value="1v3AI">1 Player vs 3 AI</option>
-                    <option value="4FFA">4 Player FFA</option>
+                    <option value="4FFA">4 Player</option>
                 </select>
             </div>
 
@@ -160,49 +171,133 @@
                     <div class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P1:</span>
                         <select id="p1ColorSelect" class="color-select">
-                            <option value="0x00ffff">Cyan</option>
-                            <option value="0xff69b4">Pink</option>
-                            <option value="0x800080">Purple</option>
-                            <option value="0xffff00">Yellow</option>
-                            <option value="0xffffff">White</option>
-                            <option value="0x008080">Teal</option>
-                            <option value="0xc0c0c0">Silver</option>
+                            <option value="0x00ffff" class="color-option">
+                                <div class="color-preview" style="background-color: #00ffff;"></div>
+                                <span>Cyan</span>
+                            </option>
+                            <option value="0xff69b4" class="color-option">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                                <span>Pink</span>
+                            </option>
+                            <option value="0x800080" class="color-option">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                                <span>Purple</span>
+                            </option>
+                            <option value="0xffff00" class="color-option">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                                <span>Yellow</span>
+                            </option>
+                            <option value="0xffffff" class="color-option">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                                <span>White</span>
+                            </option>
+                            <option value="0x008080" class="color-option">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                                <span>Teal</span>
+                            </option>
+                            <option value="0xc0c0c0" class="color-option">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
+                                <span>Silver</span>
+                            </option>
                         </select>
                     </div>
                     <div class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P2:</span>
                         <select id="p2ColorSelect" class="color-select">
-                            <option value="0xff4100">Orange</option>
-                            <option value="0xff69b4">Pink</option>
-                            <option value="0x800080">Purple</option>
-                            <option value="0xffff00">Yellow</option>
-                            <option value="0xffffff">White</option>
-                            <option value="0x008080">Teal</option>
-                            <option value="0xc0c0c0">Silver</option>
+                            <option value="0xff4100" class="color-option">
+                                <div class="color-preview" style="background-color: #ff4100;"></div>
+                                <span>Orange</span>
+                            </option>
+                            <option value="0xff69b4" class="color-option">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                                <span>Pink</span>
+                            </option>
+                            <option value="0x800080" class="color-option">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                                <span>Purple</span>
+                            </option>
+                            <option value="0xffff00" class="color-option">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                                <span>Yellow</span>
+                            </option>
+                            <option value="0xffffff" class="color-option">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                                <span>White</span>
+                            </option>
+                            <option value="0x008080" class="color-option">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                                <span>Teal</span>
+                            </option>
+                            <option value="0xc0c0c0" class="color-option">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
+                                <span>Silver</span>
+                            </option>
                         </select>
                     </div>
                     <div class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P3:</span>
                         <select id="p3ColorSelect" class="color-select">
-                            <option value="0xff0000">Red</option>
-                            <option value="0xff69b4">Pink</option>
-                            <option value="0x800080">Purple</option>
-                            <option value="0xffff00">Yellow</option>
-                            <option value="0xffffff">White</option>
-                            <option value="0x008080">Teal</option>
-                            <option value="0xc0c0c0">Silver</option>
+                            <option value="0xff0000" class="color-option">
+                                <div class="color-preview" style="background-color: #ff0000;"></div>
+                                <span>Red</span>
+                            </option>
+                            <option value="0xff69b4" class="color-option">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                                <span>Pink</span>
+                            </option>
+                            <option value="0x800080" class="color-option">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                                <span>Purple</span>
+                            </option>
+                            <option value="0xffff00" class="color-option">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                                <span>Yellow</span>
+                            </option>
+                            <option value="0xffffff" class="color-option">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                                <span>White</span>
+                            </option>
+                            <option value="0x008080" class="color-option">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                                <span>Teal</span>
+                            </option>
+                            <option value="0xc0c0c0" class="color-option">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
+                                <span>Silver</span>
+                            </option>
                         </select>
                     </div>
                     <div class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P4:</span>
                         <select id="p4ColorSelect" class="color-select">
-                            <option value="0x00ff80">Green</option>
-                            <option value="0xff69b4">Pink</option>
-                            <option value="0x800080">Purple</option>
-                            <option value="0xffff00">Yellow</option>
-                            <option value="0xffffff">White</option>
-                            <option value="0x008080">Teal</option>
-                            <option value="0xc0c0c0">Silver</option>
+                            <option value="0x00ff80" class="color-option">
+                                <div class="color-preview" style="background-color: #00ff80;"></div>
+                                <span>Green</span>
+                            </option>
+                            <option value="0xff69b4" class="color-option">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                                <span>Pink</span>
+                            </option>
+                            <option value="0x800080" class="color-option">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                                <span>Purple</span>
+                            </option>
+                            <option value="0xffff00" class="color-option">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                                <span>Yellow</span>
+                            </option>
+                            <option value="0xffffff" class="color-option">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                                <span>White</span>
+                            </option>
+                            <option value="0x008080" class="color-option">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                                <span>Teal</span>
+                            </option>
+                            <option value="0xc0c0c0" class="color-option">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
+                                <span>Silver</span>
+                            </option>
                         </select>
                     </div>
                 </div>
