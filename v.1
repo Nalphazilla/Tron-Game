@@ -116,48 +116,7 @@
             outline: none;
             box-shadow: 0 0 5px #00ffff;
         }
-        .color-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .color-dropdown-button {
-            background-color: #001a1a;
-            color: #00ffff;
-            border: 1px solid #00ffff;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            min-width: 60px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .color-dropdown-button:focus {
-            outline: none;
-            box-shadow: 0 0 5px #00ffff;
-        }
-        .color-dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #001a1a;
-            border: 1px solid #00ffff;
-            border-radius: 0.25rem;
-            min-width: 80px;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            z-index: 9999;
-            margin-top: 2px;
-            /* Debug: make it obvious when visible */
-            min-height: 50px;
-        }
-        .color-dropdown-content.show {
-            display: block !important;
-            border: 2px solid #00ffff !important;
-            background-color: #002a2a !important;
-        }
+
         .color-option {
             padding: 0.25rem;
             cursor: pointer;
@@ -261,7 +220,7 @@
                             <div class="color-option" onclick="selectColor('p2', '0x800080', '#800080', 'Purple')">
                                 <div class="color-preview" style="background-color: #800080;"></div>
                             </div>
-                            <div class="color-option" onclick="selectColor('p1', '0xffff00', '#ffff00', 'Yellow')">
+                            <div class="color-option" onclick="selectColor('p2', '0xffff00', '#ffff00', 'Yellow')">
                                 <div class="color-preview" style="background-color: #ffff00;"></div>
                             </div>
                             <div class="color-option" onclick="selectColor('p2', '0xffffff', '#ffffff', 'White')">
@@ -305,7 +264,8 @@
                         </div>
                     </div>
                     <div id="p4ColorContainer" class="flex flex-col space-y-2">
-                        <div class="text-xs text-cyan-200">P4:</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-cyan-200">P4:</span>
                             <div class="color-preview" id="p4ColorPreview" style="background-color: #00ff80;"></div>
                         </div>
                         <div class="flex flex-wrap gap-1 ml-8">
@@ -475,30 +435,7 @@
             animate();
         }
 
-        // Color dropdown functions
-        function toggleColorDropdown(player) {
-            console.log('toggleColorDropdown called for:', player);
-            const dropdown = document.getElementById(player + 'ColorDropdown');
-            console.log('Found dropdown:', dropdown);
-            
-            if (!dropdown) {
-                console.error('Dropdown not found for player:', player);
-                return;
-            }
-            
-            const allDropdowns = document.querySelectorAll('.color-dropdown-content');
-            
-            // Close all other dropdowns
-            allDropdowns.forEach(d => {
-                if (d !== dropdown) d.classList.remove('show');
-            });
-            
-            // Toggle current dropdown
-            const isVisible = dropdown.classList.contains('show');
-            console.log('Dropdown visibility before toggle:', isVisible);
-            dropdown.classList.toggle('show');
-            console.log('Dropdown visibility after toggle:', dropdown.classList.contains('show'));
-        }
+
 
         function selectColor(player, hexValue, cssColor, colorName) {
             // Update the color value
@@ -517,14 +454,7 @@
             updateScoreColors();
         }
 
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.color-dropdown')) {
-                document.querySelectorAll('.color-dropdown-content').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                });
-            }
-        });
+
 
         function updatePlayerColorVisibility() {
             const p1Container = document.getElementById('p1ColorContainer');
