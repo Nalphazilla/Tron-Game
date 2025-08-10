@@ -267,6 +267,10 @@
             <p class="text-sm">Press 'C' to cycle players</p>
         </div>
     </div>
+    
+    <div id="invulnerabilityCountdown" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold z-40">
+        Light Wall Activates in: <span id="countdownTimer">3</span>s
+    </div>
 
 
     <div id="scoreContainer" class="score-display">
@@ -347,6 +351,9 @@
             document.getElementById('player3Score'),
             document.getElementById('player4Score'),
         ];
+        
+        const invulnerabilityCountdown = document.getElementById('invulnerabilityCountdown');
+        const countdownTimer = document.getElementById('countdownTimer');
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -602,6 +609,9 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
+                this.invulnerable = false;
+                this.invulnerabilityTimer = 0;
+                
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
@@ -615,21 +625,39 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
+                this.invulnerable = true;
+                this.invulnerabilityTimer = 180; // 3 seconds at 60fps
                 scene.add(this.mesh);
             }
 
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
                 
+                // Handle invulnerability countdown
+                if (this.invulnerable) {
+                    this.invulnerabilityTimer--;
+                    if (this.invulnerabilityTimer <= 0) {
+                        this.invulnerable = false;
+                        this.createTrail(); // Start creating trail after invulnerability ends
+                        // Reset visual appearance
+                        this.visuals.material.emissiveIntensity = 1.0;
+                    } else {
+                        // Flash effect during invulnerability
+                        const flashIntensity = 2.0 + Math.sin(this.invulnerabilityTimer * 0.3) * 1.0;
+                        this.visuals.material.emissiveIntensity = flashIntensity;
+                    }
+                } else {
+                    this.createTrail();
+                }
+                
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
                 const MAX_TILT = Math.PI / 9;
-                const targetTilt = turnDirection * MAX_TILT;
+                const targetTilt = turnDirection * this.turnSpeed;
                 this.visuals.rotation.z = THREE.MathUtils.lerp(this.visuals.rotation.z, targetTilt, 0.1);
 
                 this.mesh.translateZ(-this.speed);
                 
-                this.createTrail();
                 this.checkCollisions(opponents);
             }
             
@@ -746,6 +774,8 @@
             }
 
             checkCollisions(allPlayers) {
+                if (this.invulnerable) return;
+                
                 for (const opponent of allPlayers) {
                     if (opponent.id !== this.id && opponent.isAlive) {
                         if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
@@ -794,6 +824,11 @@
                 createExplosion(this.mesh.position, this.color);
                 scene.remove(this.mesh);
                 checkWinCondition();
+                
+                // Hide countdown if this was the last player
+                if (players.filter(p => p.isAlive).length <= 1) {
+                    invulnerabilityCountdown.classList.add('hidden');
+                }
             }
         }
         
@@ -937,6 +972,20 @@
             scoreContainer.classList.remove('hidden');
             loadMap(currentMap);
             resetGame(false);
+            
+            // Show invulnerability countdown
+            invulnerabilityCountdown.classList.remove('hidden');
+            let countdown = 3;
+            countdownTimer.textContent = countdown;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownTimer.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    invulnerabilityCountdown.classList.add('hidden');
+                }
+            }, 1000);
         }
 
         function cleanupGame() {
@@ -968,6 +1017,7 @@
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.add('hidden');
             startMenu.classList.remove('hidden');
+            invulnerabilityCountdown.classList.add('hidden');
         }
 
         function resetGame(keepScores = true) {
@@ -1120,6 +1170,7 @@
             }
             gameOverMenu.classList.remove('hidden');
             spectateMessage.classList.add('hidden');
+            invulnerabilityCountdown.classList.add('hidden');
         }
 
         function updateScores() {
