@@ -242,9 +242,7 @@
                         <div class="color-option" data-hex="0x008080" data-css="#008080" data-name="Teal">
                             <div class="color-preview" style="background-color: #008080;"></div>
                         </div>
-                        <div class="color-option" data-hex="0xc0c0c0" data-css="#c0c0c0" data-name="Silver">
-                            <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -366,7 +364,7 @@
             createEnvironment();
             
             const renderScene = new RenderPass(scene, camera);
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.5, 0.8);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.5, 0.8);
             composer = new EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
@@ -534,7 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: 4, 
+                emissiveIntensity: 1.5, 
                 toneMapped: false 
             });
 
@@ -707,7 +705,7 @@
 
             createTrail() {
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: 2.0,
+                    color: this.color, emissive: this.color, emissiveIntensity: 0.8,
                     transparent: true, opacity: 1.0, side: THREE.DoubleSide,
                     toneMapped: false
                 });
@@ -854,7 +852,7 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: 2.0,
+                emissiveIntensity: 0.8,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
