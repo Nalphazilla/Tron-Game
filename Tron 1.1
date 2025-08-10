@@ -68,40 +68,6 @@
         .player2-score { color: #ff4100; }
         .player3-score { color: #ff0000; }
         .player4-score { color: #00ff80; }
-        
-        .invulnerability-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ffff00;
-            border-radius: 10px;
-            padding: 1rem 2rem;
-            text-align: center;
-            font-family: 'Orbitron', sans-serif;
-            color: #ffff00;
-            text-shadow: 0 0 10px #ffff00;
-            box-shadow: 0 0 20px #ffff00;
-            z-index: 1000;
-        }
-        
-        .invulnerability-indicator.hidden {
-            display: none;
-        }
-        
-        .invulnerability-text {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        
-        .invulnerability-timer {
-            display: block;
-            font-size: 2rem;
-            font-weight: bold;
-        }
         .score-color-p1 { color: #00ffff; }
         .score-color-p2 { color: #ff4100; }
         .score-color-p3 { color: #ff0000; }
@@ -150,59 +116,41 @@
             outline: none;
             box-shadow: 0 0 5px #00ffff;
         }
+
         .color-option {
+            padding: 0.25rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            color: #00ffff;
+        }
+        .color-option:hover {
+            background-color: #003333;
         }
         .color-preview {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-            border: 1px solid #00ffff;
-        }
-        .score-display {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-        
-        .invulnerability-indicator {
-            position: absolute;
-            top: 120px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            font-family: 'Orbitron', monospace;
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        .invulnerability-text {
-            margin-bottom: 8px;
-            font-size: 14px;
-            text-shadow: 0 0 10px #00ff00;
-        }
-        
-        .invulnerability-bar {
-            width: 100px;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.5);
+            width: 24px;
+            height: 24px;
             border-radius: 4px;
-            overflow: hidden;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 8px currentColor;
         }
-        
-        .invulnerability-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff00, #00cc00);
-            width: 100%;
-            transition: width 0.1s ease;
-            box-shadow: 0 0 10px #00ff00;
+        .player-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #00ffff;
+        }
+        .player-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px currentColor;
+        }
+        .player-circle.selected {
+            border: 3px solid #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -244,138 +192,57 @@
             <!-- Color Selection -->
             <div>
                 <label class="block text-cyan-300 mb-2">PLAYER COLORS</label>
-                <div class="grid grid-cols-3 gap-2 mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P1:</span>
-                        <select id="p1ColorSelect" class="color-select">
-                            <option value="0x00ffff" class="color-option">
-                                <div class="color-preview" style="background-color: #00ffff;"></div>
-                                <span>Cyan</span>
-                            </option>
-                            <option value="0xff69b4" class="color-option">
-                                <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                <span>Pink</span>
-                            </option>
-                            <option value="0x800080" class="color-option">
-                                <div class="color-preview" style="background-color: #800080;"></div>
-                                <span>Purple</span>
-                            </option>
-                            <option value="0xffff00" class="color-option">
-                                <div class="color-preview" style="background-color: #ffff00;"></div>
-                                <span>Yellow</span>
-                            </option>
-                            <option value="0xffffff" class="color-option">
-                                <div class="color-preview" style="background-color: #ffffff;"></div>
-                                <span>White</span>
-                            </option>
-                            <option value="0x008080" class="color-option">
-                                <div class="color-preview" style="background-color: #008080;"></div>
-                                <span>Teal</span>
-                            </option>
-                            <option value="0xc0c0c0" class="color-option">
-                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                <span>Silver</span>
-                            </option>
-                        </select>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div id="p1ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P1</span>
+                        <div class="color-preview player-circle" id="p1ColorPreview" style="background-color: #00ffff;"></div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P2:</span>
-                        <select id="p2ColorSelect" class="color-select">
-                            <option value="0xff4100" class="color-option">
-                                <div class="color-preview" style="background-color: #ff4100;"></div>
-                                <span>Orange</span>
-                            </option>
-                            <option value="0xff69b4" class="color-option">
-                                <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                <span>Pink</span>
-                            </option>
-                            <option value="0x800080" class="color-option">
-                                <div class="color-preview" style="background-color: #800080;"></div>
-                                <span>Purple</span>
-                            </option>
-                            <option value="0xffff00" class="color-option">
-                                <div class="color-preview" style="background-color: #ffff00;"></div>
-                                <span>Yellow</span>
-                            </option>
-                            <option value="0xffffff" class="color-option">
-                                <div class="color-preview" style="background-color: #ffffff;"></div>
-                                <span>White</span>
-                            </option>
-                            <option value="0x008080" class="color-option">
-                                <div class="color-preview" style="background-color: #008080;"></div>
-                                <span>Teal</span>
-                            </option>
-                            <option value="0xc0c0c0" class="color-option">
-                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                <span>Silver</span>
-                            </option>
-                        </select>
+                    <div id="p2ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P2</span>
+                        <div class="color-preview player-circle" id="p2ColorPreview" style="background-color: #ff4100;"></div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P3:</span>
-                        <select id="p3ColorSelect" class="color-select">
-                            <option value="0xff0000" class="color-option">
-                                <div class="color-preview" style="background-color: #ff0000;"></div>
-                                <span>Red</span>
-                            </option>
-                            <option value="0xff69b4" class="color-option">
-                                <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                <span>Pink</span>
-                            </option>
-                            <option value="0x800080" class="color-option">
-                                <div class="color-preview" style="background-color: #800080;"></div>
-                                <span>Purple</span>
-                            </option>
-                            <option value="0xffff00" class="color-option">
-                                <div class="color-preview" style="background-color: #ffff00;"></div>
-                                <span>Yellow</span>
-                            </option>
-                            <option value="0xffffff" class="color-option">
-                                <div class="color-preview" style="background-color: #ffffff;"></div>
-                                <span>White</span>
-                            </option>
-                            <option value="0x008080" class="color-option">
-                                <div class="color-preview" style="background-color: #008080;"></div>
-                                <span>Teal</span>
-                            </option>
-                            <option value="0xc0c0c0" class="color-option">
-                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                <span>Silver</span>
-                            </option>
-                        </select>
+                    <div id="p3ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P3</span>
+                        <div class="color-preview player-circle" id="p3ColorPreview" style="background-color: #ff0000;"></div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P4:</span>
-                        <select id="p4ColorSelect" class="color-select">
-                            <option value="0x00ff80" class="color-option">
-                                <div class="color-preview" style="background-color: #00ff80;"></div>
-                                <span>Green</span>
-                            </option>
-                            <option value="0xff69b4" class="color-option">
-                                <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                <span>Pink</span>
-                            </option>
-                            <option value="0x800080" class="color-option">
-                                <div class="color-preview" style="background-color: #800080;"></div>
-                                <span>Purple</span>
-                            </option>
-                            <option value="0xffff00" class="color-option">
-                                <div class="color-preview" style="background-color: #ffff00;"></div>
-                                <span>Yellow</span>
-                            </option>
-                            <option value="0xffffff" class="color-option">
-                                <div class="color-preview" style="background-color: #ffffff;"></div>
-                                <span>White</span>
-                            </option>
-                            <option value="0x008080" class="color-option">
-                                <div class="color-preview" style="background-color: #008080;"></div>
-                                <span>Teal</span>
-                            </option>
-                            <option value="0xc0c0c0" class="color-option">
-                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                <span>Silver</span>
-                            </option>
-                        </select>
+                    <div id="p4ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P4</span>
+                        <div class="color-preview player-circle" id="p4ColorPreview" style="background-color: #00ff80;"></div>
+                    </div>
+                </div>
+                
+                <!-- Color Options (hidden by default) -->
+                <div id="colorOptions" class="hidden">
+                    <div class="text-xs text-cyan-200 mb-2">Select Color for <span id="selectedPlayerText">P1</span>:</div>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <div class="color-option" data-hex="0x00ffff" data-css="#00ffff" data-name="Cyan">
+                            <div class="color-preview" style="background-color: #00ffff;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff4100" data-css="#ff4100" data-name="Orange">
+                            <div class="color-preview" style="background-color: #ff4100;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff0000" data-css="#ff0000" data-name="Red">
+                            <div class="color-preview" style="background-color: #ff0000;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x00ff80" data-css="#00ff80" data-name="Green">
+                            <div class="color-preview" style="background-color: #00ff80;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff69b4" data-css="#ff69b4" data-name="Pink">
+                            <div class="color-preview" style="background-color: #ff69b4;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x800080" data-css="#800080" data-name="Purple">
+                            <div class="color-preview" style="background-color: #800080;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xffff00" data-css="#ffff00" data-name="Yellow">
+                            <div class="color-preview" style="background-color: #ffff00;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xffffff" data-css="#ffffff" data-name="White">
+                            <div class="color-preview" style="background-color: #ffffff;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x20b2aa" data-css="#20b2aa" data-name="Teal">
+                            <div class="color-preview" style="background-color: #20b2aa;"></div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -407,13 +274,6 @@
         <div id="player2Score" class="player2-score hidden">P2: 0</div>
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
-    </div>
-    
-    <div id="invulnerabilityIndicator" class="invulnerability-indicator hidden">
-        <div class="invulnerability-text">INVULNERABLE</div>
-        <div class="invulnerability-bar">
-            <div class="invulnerability-fill"></div>
-        </div>
     </div>
 
     <!-- Three.js and Post-processing scripts -->
@@ -472,14 +332,14 @@
         const spectateMessage = document.getElementById('spectateMessage');
         const modeSelect = document.getElementById('modeSelect');
         const startGameButton = document.getElementById('startGameButton');
-        const p1ColorSelect = document.getElementById('p1ColorSelect');
-        const p2ColorSelect = document.getElementById('p2ColorSelect');
-        const p3ColorSelect = document.getElementById('p3ColorSelect');
-        const p4ColorSelect = document.getElementById('p4ColorSelect');
+        // Color selection variables for custom dropdowns
+        let p1ColorValue = 0x00ffff;
+        let p2ColorValue = 0xff4100;
+        let p3ColorValue = 0xff0000;
+        let p4ColorValue = 0x00ff80;
         const playAgainButton = document.getElementById('playAgainButton');
         const backToMenuButton = document.getElementById('backToMenuButton');
         const scoreContainer = document.getElementById('scoreContainer');
-        const invulnerabilityIndicator = document.getElementById('invulnerabilityIndicator');
         const mapSelect = document.getElementById('mapSelect');
         const scoreElems = [
             document.getElementById('player1Score'),
@@ -487,8 +347,6 @@
             document.getElementById('player3Score'),
             document.getElementById('player4Score'),
         ];
-        
-        
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -502,11 +360,12 @@
             scene.fog = new THREE.Fog(scene.background, gameSize * 0.5, gameSize * 1.5);
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 
-            scene.add(new THREE.AmbientLight(0x404040, 2));
+            scene.add(new THREE.AmbientLight(0x404040, 3));
+            scene.add(new THREE.DirectionalLight(0xffffff, 1.5));
             createEnvironment();
             
             const renderScene = new RenderPass(scene, camera);
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.5, 0.8);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.5, 0.8);
             composer = new EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
@@ -520,18 +379,95 @@
             playAgainButton.addEventListener('click', resetGame);
             backToMenuButton.addEventListener('click', backToMenu);
             mapSelect.addEventListener('change', (e) => { currentMap = e.target.value; });
-            modeSelect.addEventListener('change', (e) => { gameMode = e.target.value; });
+            modeSelect.addEventListener('change', (e) => { gameMode = e.target.value; updatePlayerColorVisibility(); });
             
-            // Color selection event listeners
-            p1ColorSelect.addEventListener('change', updateScoreColors);
-            p2ColorSelect.addEventListener('change', updateScoreColors);
-            p3ColorSelect.addEventListener('change', updateScoreColors);
-            p4ColorSelect.addEventListener('change', updateScoreColors);
-
             // Initialize default colors
             updateScoreColors();
+            updatePlayerColorVisibility(); // Call this to set initial visibility
+            
+            // Add event listeners for color selection
+            document.getElementById('p1ColorPreview').addEventListener('click', () => selectPlayer('p1'));
+            document.getElementById('p2ColorPreview').addEventListener('click', () => selectPlayer('p2'));
+            document.getElementById('p3ColorPreview').addEventListener('click', () => selectPlayer('p3'));
+            document.getElementById('p4ColorPreview').addEventListener('click', () => selectPlayer('p4'));
+            
+            // Add event listeners for color options
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const hexValue = option.dataset.hex;
+                    const cssColor = option.dataset.css;
+                    const colorName = option.dataset.name;
+                    selectColor(hexValue, cssColor, colorName);
+                });
+            });
 
             animate();
+        }
+
+
+
+        let selectedPlayer = null;
+        
+        function selectPlayer(player) {
+            // Remove selection from all players
+            document.querySelectorAll('.player-circle').forEach(circle => {
+                circle.classList.remove('selected');
+            });
+            
+            // Select the clicked player
+            selectedPlayer = player;
+            document.getElementById(player + 'ColorPreview').classList.add('selected');
+            document.getElementById('selectedPlayerText').textContent = player.toUpperCase();
+            document.getElementById('colorOptions').classList.remove('hidden');
+        }
+        
+        function selectColor(hexValue, cssColor, colorName) {
+            if (!selectedPlayer) return;
+            
+            // Update the color value
+            if (selectedPlayer === 'p1') p1ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p2') p2ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p3') p3ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p4') p4ColorValue = parseInt(hexValue);
+            
+            // Update the preview
+            document.getElementById(selectedPlayer + 'ColorPreview').style.backgroundColor = cssColor;
+            
+            // Remove selection styling
+            document.getElementById(selectedPlayer + 'ColorPreview').classList.remove('selected');
+            
+            // Hide color options
+            document.getElementById('colorOptions').classList.add('hidden');
+            selectedPlayer = null;
+            
+            // Update score colors if game is running
+            updateScoreColors();
+        }
+
+
+
+        function updatePlayerColorVisibility() {
+            const p1Container = document.getElementById('p1ColorContainer');
+            const p2Container = document.getElementById('p2ColorContainer');
+            const p3Container = document.getElementById('p3ColorContainer');
+            const p4Container = document.getElementById('p4ColorContainer');
+            
+            // Hide all first
+            p1Container.style.display = 'none';
+            p2Container.style.display = 'none';
+            p3Container.style.display = 'none';
+            p4Container.style.display = 'none';
+            
+            // Show relevant players based on game mode
+            if (gameMode === 'pvp' || gameMode === 'pva') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+            } else if (gameMode === '1v3AI' || gameMode === '4FFA') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+                p3Container.style.display = 'block';
+                p4Container.style.display = 'block';
+            }
         }
 
         function createEnvironment() {
@@ -594,7 +530,15 @@
         function createLightCycleModel(color) {
             const group = new THREE.Group();
             const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x101010, metalness: 0.9, roughness: 0.3 });
-            const lightMaterial = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 3, toneMapped: false });
+            const lightMaterial = new THREE.MeshStandardMaterial({ 
+                color: color, 
+                emissive: color, 
+                emissiveIntensity: (color.getHex() === 0x20b2aa || color.getHex() === 0x800080) ? 20.0 : 
+                                  (color.getHex() === 0xff4100 || color.getHex() === 0xff0000) ? 8.0 :
+                                  (color.getHex() === 0x00ff80) ? 12.0 :
+                                  (color.getHex() === 0xffff00 || color.getHex() === 0xffffff || color.getHex() === 0x0000ff) ? 2.0 : 4.0, 
+                toneMapped: false 
+            });
 
             const bodyCurve = new THREE.CatmullRomCurve3([
                 new THREE.Vector3(0, 0.5, -2.2), new THREE.Vector3(0, 1.0, -1.0),
@@ -629,7 +573,7 @@
             glow.rotation.x = Math.PI / 2;
             
             frontWheel.add(glow.clone());
-            backWheel.add(glow.clone())
+            backWheel.add(glow.clone());
             
             const collisionBoxGeo = new THREE.BoxGeometry(0.8, 1.5, 5);
             const collisionBoxMat = new THREE.MeshBasicMaterial({ visible: false });
@@ -658,30 +602,11 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
-                // Invulnerability properties
-                this.isInvulnerable = false;
-                this.invulnerabilityTimer = 0;
-                this.invulnerabilityDuration = 180; // 3 seconds at 60fps
-                
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
                     this.aiCurrentTurn = 0;
                     this.aiDecisionInterval = 10; 
-                }
-            }
-
-            activateInvulnerability() {
-                this.isInvulnerable = true;
-                this.invulnerabilityTimer = this.invulnerabilityDuration;
-            }
-
-            checkInvulnerability() {
-                if (this.isInvulnerable) {
-                    this.invulnerabilityTimer--;
-                    if (this.invulnerabilityTimer <= 0) {
-                        this.isInvulnerable = false;
-                    }
                 }
             }
 
@@ -691,60 +616,10 @@
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
-                
-                // Activate invulnerability on spawn
-                this.activateInvulnerability();
             }
 
-            handleInvulnerableCollision(collisionType, position) {
-                if (!this.isInvulnerable) return false;
-                
-                switch(collisionType) {
-                    case 'boundary':
-                        this.handleBoundaryBounce();
-                        break;
-                    case 'obstacle':
-                        this.handleObstacleBounce();
-                        break;
-                    case 'trail':
-                        this.handleTrailBounce();
-                        break;
-                }
-                
-                createCollisionEffect(position, this.color);
-                return true;
-            }
-
-            handleBoundaryBounce() {
-                const currentPos = this.mesh.position;
-                const halfSize = gameSize / 2;
-                
-                // Bounce back from boundary
-                if (Math.abs(currentPos.x) > halfSize) {
-                    this.mesh.position.x = Math.sign(currentPos.x) * (halfSize - 1);
-                }
-                if (Math.abs(currentPos.z) > halfSize) {
-                    this.mesh.position.z = Math.sign(currentPos.z) * (halfSize - 1);
-                }
-                
-                // Reverse direction
-                this.mesh.rotation.y += Math.PI;
-            }
-
-            handleObstacleBounce() {
-                // Simple bounce back
-                this.mesh.translateZ(this.speed * 2);
-            }
-
-            handleTrailBounce() {
-                // Bounce back from trail
-                this.mesh.translateZ(this.speed * 1.5);
-            }
-            
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
-                
-                this.checkInvulnerability();
                 
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
@@ -833,9 +708,24 @@
             }
 
             createTrail() {
+                // Custom brightness for each color
+                let intensity = 2.0; // Default
+                const colorHex = this.color.getHex();
+                
+                if (colorHex === 0x20b2aa || colorHex === 0x800080) {
+                    intensity = 10.0; // Teal & Purple x5
+                } else if (colorHex === 0xff4100 || colorHex === 0xff0000) {
+                    intensity = 4.0; // Orange & Red x2
+                } else if (colorHex === 0x00ff80) {
+                    intensity = 6.0; // Green x3
+                } else if (colorHex === 0xffff00 || colorHex === 0xffffff || colorHex === 0x0000ff) {
+                    intensity = 1.0; // Yellow, White, Blue ÷2
+                }
+                
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: 1.5,
-                    transparent: true, opacity: 1.0, side: THREE.DoubleSide
+                    color: this.color, emissive: this.color, emissiveIntensity: intensity,
+                    transparent: true, opacity: 1.0, side: THREE.DoubleSide,
+                    toneMapped: false
                 });
                 const wallHeight = 0.9;
                 const trailGeo = new THREE.BoxGeometry(0.2, wallHeight, 1.5);
@@ -859,16 +749,7 @@
                 for (const opponent of allPlayers) {
                     if (opponent.id !== this.id && opponent.isAlive) {
                         if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
-                            // If invulnerable, only collide but don't die
-                            if (this.isInvulnerable || opponent.isInvulnerable) {
-                                // Create a collision effect but don't kill players
-                                this.handleInvulnerableCollision('trail', this.mesh.position);
-                                return;
-                            } else {
-                                this.die(); 
-                                opponent.die(); 
-                                return;
-                            }
+                            this.die(); opponent.die(); return;
                         }
                     }
                 }
@@ -876,14 +757,7 @@
                 const headPos = this.mesh.position;
                 const halfSize = gameSize / 2;
                 if (Math.abs(headPos.x) > halfSize || Math.abs(headPos.z) > halfSize) {
-                    // If invulnerable, bounce back instead of dying
-                    if (this.isInvulnerable) {
-                        this.handleInvulnerableCollision('boundary', headPos);
-                        return;
-                    } else {
-                        this.die(); 
-                        return;
-                    }
+                    this.die(); return;
                 }
                 
                 const collisionBox = this.mesh.getObjectByName("collisionBox");
@@ -892,26 +766,18 @@
                     const collisionObstacles = [...trails, ...mapObjects];
 
                     for (const obstacle of collisionObstacles) {
+                         if (obstacle.userData.owner === this && obstacle.userData.lifetime > TRAIL_LIFETIME - 15) {
+                            continue; 
+                        }
+
                         const obstacleBox = new THREE.Box3().setFromObject(obstacle);
                         if (playerBox.intersectsBox(obstacleBox)) {
-                            // If invulnerable, bounce back instead of dying
-                            if (this.isInvulnerable) {
-                                this.handleInvulnerableCollision('obstacle', obstacle.position);
-                                return;
-                            } else {
-                                this.die();
-                                return;
-                            }
+                            this.die();
+                            return;
                         }
                     }
                 }
             }
-            
-
-            
-
-            
-
 
             die() {
                 if (!this.isAlive) return;
@@ -959,123 +825,6 @@
             explosions.push(explosion);
         }
 
-        function createCollisionEffect(position, color) {
-            const effect = { lifetime: 30 };
-            const ringGeo = new THREE.RingGeometry(0.5, 2, 16);
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: color,
-                transparent: true,
-                opacity: 0.8,
-                side: THREE.DoubleSide
-            });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.copy(position);
-            ring.position.y = 0.1;
-            ring.rotation.x = -Math.PI / 2;
-            
-            effect.mesh = ring;
-            scene.add(effect.mesh);
-            
-            // Add to a temporary effects array for cleanup
-            if (!window.collisionEffects) window.collisionEffects = [];
-            window.collisionEffects.push(effect);
-        }
-
-        function updateCollisionEffects() {
-            if (!window.collisionEffects) return;
-            
-            for (let i = window.collisionEffects.length - 1; i >= 0; i--) {
-                const effect = window.collisionEffects[i];
-                effect.lifetime--;
-                effect.mesh.material.opacity = effect.lifetime / 30;
-                
-                if (effect.lifetime <= 0) {
-                    scene.remove(effect.mesh);
-                    effect.mesh.geometry.dispose();
-                    effect.mesh.material.dispose();
-                    window.collisionEffects.splice(i, 1);
-                }
-            }
-        }
-        
-        function createBoundaryBounceEffect(position, color) {
-            // Create a ripple effect for boundary bounces
-            const rippleGeo = new THREE.RingGeometry(0.5, 2, 16);
-            const rippleMat = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 1.5,
-                transparent: true,
-                opacity: 0.8,
-                side: THREE.DoubleSide,
-                toneMapped: false
-                });
-            
-            const ripple = new THREE.Mesh(rippleGeo, rippleMat);
-            ripple.position.copy(position);
-            ripple.position.y = 0.1;
-            ripple.rotation.x = -Math.PI / 2;
-            
-            scene.add(ripple);
-            
-            // Animate ripple expansion
-            let scale = 1;
-            const animateRipple = () => {
-                scale += 0.1;
-                ripple.scale.set(scale, scale, scale);
-                ripple.material.opacity = 0.8 - (scale - 1) * 0.2;
-                
-                if (scale < 3) {
-                    requestAnimationFrame(animateRipple);
-                } else {
-                    scene.remove(ripple);
-                    ripple.geometry.dispose();
-                    ripple.material.dispose();
-                }
-            };
-            animateRipple();
-        }
-        
-        function createObstacleBounceEffect(position, color) {
-            // Create a spark effect for obstacle bounces
-            const sparkCount = 6;
-            const sparks = new THREE.Group();
-            
-            for (let i = 0; i < sparkCount; i++) {
-                const sparkGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8);
-                const sparkMat = new THREE.MeshStandardMaterial({
-                    color: color,
-                    emissive: color,
-                    emissiveIntensity: 3.0,
-                    toneMapped: false
-                });
-                
-                const spark = new THREE.Mesh(sparkGeo, sparkMat);
-                spark.position.copy(position);
-                
-                // Random direction and rotation
-                const angle = (i / sparkCount) * Math.PI * 2;
-                const radius = 1.5 + Math.random() * 1;
-                spark.position.x += Math.cos(angle) * radius;
-                spark.position.z += Math.sin(angle) * radius;
-                spark.position.y += Math.random() * 1;
-                spark.rotation.z = Math.random() * Math.PI;
-                
-                sparks.add(spark);
-                }
-            
-            scene.add(sparks);
-            
-            // Remove sparks after animation
-            setTimeout(() => {
-                scene.remove(sparks);
-                sparks.children.forEach(child => {
-                    child.geometry.dispose();
-                    child.material.dispose();
-                });
-            }, 800);
-        }
-
         function updateExplosions() {
             for (let i = explosions.length - 1; i >= 0; i--) {
                 const ex = explosions[i];
@@ -1121,7 +870,10 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: 2.0,
+                emissiveIntensity: (player.color.getHex() === 0x008080 || player.color.getHex() === 0xffffff) ? 15.0 : 
+                                  (player.color.getHex() === 0xff4100 || player.color.getHex() === 0xff0000) ? 6.0 :
+                                  (player.color.getHex() === 0x00ff80) ? 9.0 :
+                                  (player.color.getHex() === 0xffff00 || player.color.getHex() === 0x0000ff) ? 1.5 : 3.0,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
@@ -1201,17 +953,6 @@
                 });
             });
             announcements = [];
-            
-            // Clean up collision effects
-            if (window.collisionEffects) {
-                window.collisionEffects.forEach(effect => {
-                    scene.remove(effect.mesh);
-                    effect.mesh.geometry.dispose();
-                    effect.mesh.material.dispose();
-                });
-                window.collisionEffects = [];
-            }
-            
             players.forEach(p => scene.remove(p.mesh));
             players = [];
             gameWinner = null;
@@ -1240,11 +981,11 @@
             
             let activePlayerConfigs = [];
             
-            // Get selected colors from dropdowns
-            const p1Color = parseInt(p1ColorSelect.value, 16);
-            const p2Color = parseInt(p2ColorSelect.value, 16);
-            const p3Color = parseInt(p3ColorSelect.value, 16);
-            const p4Color = parseInt(p4ColorSelect.value, 16);
+            // Get selected colors from custom dropdowns
+            const p1Color = p1ColorValue;
+            const p2Color = p2ColorValue;
+            const p3Color = p3ColorValue;
+            const p4Color = p4ColorValue;
             
             if (gameMode === 'pvp' || gameMode === 'pva') {
                 activePlayerConfigs.push({ id: 0, color: p1Color, pos: new THREE.Vector3(-offset, startY, 0), rot: -Math.PI / 2 });
@@ -1297,9 +1038,11 @@
 
         function createArenaObstacles() {
             const obstacleMat = new THREE.MeshStandardMaterial({
-                color: 0x112244,
-                metalness: 0.9,
-                roughness: 0.2,
+                color: 0x444466,
+                metalness: 0.3,
+                roughness: 0.7,
+                emissive: 0x222244,
+                emissiveIntensity: 0.3,
             });
             
             const obstacleGeo = new THREE.BoxGeometry(20, 8, 20);
@@ -1386,48 +1129,14 @@
             updateScoreColors();
         }
 
-        function updateInvulnerabilityIndicator() {
-            const humanPlayer = players.find(p => p.id === 0);
-            if (!humanPlayer || !humanPlayer.isAlive) {
-                invulnerabilityIndicator.classList.add('hidden');
-                return;
-            }
-            
-            if (humanPlayer.isInvulnerable) {
-                invulnerabilityIndicator.classList.remove('hidden');
-                const fill = invulnerabilityIndicator.querySelector('.invulnerability-fill');
-                const percentage = humanPlayer.invulnerabilityTimer / humanPlayer.invulnerabilityDuration;
-                fill.style.width = `${percentage * 100}%`;
-                
-                // Change color based on remaining time
-                if (percentage > 0.6) {
-                    fill.style.background = 'linear-gradient(90deg, #00ff00, #00cc00)';
-                    fill.style.boxShadow = '0 0 10px #00ff00';
-                } else if (percentage > 0.3) {
-                    fill.style.background = 'linear-gradient(90deg, #ffff00, #cccc00)';
-                    fill.style.boxShadow = '0 0 10px #ffff00';
-                } else {
-                    fill.style.background = 'linear-gradient(90deg, #ff0000, #cc0000)';
-                    fill.style.boxShadow = '0 0 10px #ff0000';
-                }
-            } else {
-                invulnerabilityIndicator.classList.add('hidden');
-            }
-        }
-        
         function updateScoreColors() {
-            const p1Color = parseInt(p1ColorSelect.value, 16);
-            const p2Color = parseInt(p2ColorSelect.value, 16);
-            const p3Color = parseInt(p3ColorSelect.value, 16);
-            const p4Color = parseInt(p4ColorSelect.value, 16);
-            
             // Convert hex to CSS color
             const hexToCSS = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
             
-            scoreElems[0].style.color = hexToCSS(p1Color);
-            scoreElems[1].style.color = hexToCSS(p2Color);
-            scoreElems[2].style.color = hexToCSS(p3Color);
-            scoreElems[3].style.color = hexToCSS(p4Color);
+            scoreElems[0].style.color = hexToCSS(p1ColorValue);
+            scoreElems[1].style.color = hexToCSS(p2ColorValue);
+            scoreElems[2].style.color = hexToCSS(p3ColorValue);
+            scoreElems[3].style.color = hexToCSS(p4ColorValue);
         }
         
         function updateTrails() {
@@ -1579,9 +1288,7 @@
             
             updateTrails();
             updateExplosions();
-            updateCollisionEffects(); // Call the new collision effect update function
             updateAnnouncements();
-            updateInvulnerabilityIndicator();
             
             updateCamera();
             composer.render();
