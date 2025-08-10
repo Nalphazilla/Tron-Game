@@ -657,39 +657,8 @@
                 const targetTilt = turnDirection * MAX_TILT;
                 this.visuals.rotation.z = THREE.MathUtils.lerp(this.visuals.rotation.z, targetTilt, 0.1);
 
-                // Move the player
-                const newPosition = this.mesh.position.clone();
-                newPosition.translateZ(-this.speed);
-                
-                // During invulnerability, prevent moving into obstacles
-                if (this.invulnerable) {
-                    const collisionBox = this.mesh.getObjectByName("collisionBox");
-                    if (collisionBox) {
-                        const testMesh = this.mesh.clone();
-                        testMesh.position.copy(newPosition);
-                        const testBox = new THREE.Box3().setFromObject(testMesh);
-                        
-                        // Check if new position would be inside an obstacle
-                        const collisionObstacles = mapObjects.filter(obj => !obj.userData.isRamp);
-                        let wouldCollide = false;
-                        
-                        for (const obstacle of collisionObstacles) {
-                            const obstacleBox = new THREE.Box3().setFromObject(obstacle);
-                            if (testBox.intersectsBox(obstacleBox)) {
-                                wouldCollide = true;
-                                break;
-                            }
-                        }
-                        
-                        if (!wouldCollide) {
-                            this.mesh.position.copy(newPosition);
-                        }
-                    } else {
-                        this.mesh.position.copy(newPosition);
-                    }
-                } else {
-                    this.mesh.position.copy(newPosition);
-                }
+                // Simple movement - just like before
+                this.mesh.translateZ(-this.speed);
                 
                 this.checkCollisions(opponents);
             }
