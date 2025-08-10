@@ -532,8 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: (color.getHex() === 0x00ff80 || color.getHex() === 0xffff00 || 
-                                    color.getHex() === 0xffffff || color.getHex() === 0x008080) ? 3.0 : 7.0, 
+                emissiveIntensity: 7.0, 
                 toneMapped: false 
             });
 
@@ -705,16 +704,9 @@
             }
 
             createTrail() {
-                // Make all colors bright by default, dim only specific ones
-                let intensity = 5.0; // Bright for most colors
-                const colorHex = this.color.getHex();
-                if (colorHex === 0x00ff80 || colorHex === 0xffff00 || 
-                    colorHex === 0xffffff || colorHex === 0x008080) {
-                    intensity = 1.5; // Dimmer for green, yellow, white, teal
-                }
-                
+                // Make all colors equally bright for now
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: intensity,
+                    color: this.color, emissive: this.color, emissiveIntensity: 5.0,
                     transparent: true, opacity: 1.0, side: THREE.DoubleSide,
                     toneMapped: false
                 });
@@ -861,8 +853,7 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: (player.color.getHex() === 0x00ff80 || player.color.getHex() === 0xffff00 || 
-                                   player.color.getHex() === 0xffffff || player.color.getHex() === 0x008080) ? 2.0 : 5.0,
+                emissiveIntensity: 5.0,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
