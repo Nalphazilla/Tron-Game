@@ -628,7 +628,6 @@
                 this.isInvulnerable = false;
                 this.invulnerabilityTimer = 0;
                 this.invulnerabilityDuration = 3000; // 3 seconds in milliseconds
-                this.lightWall = null;
                 
                 if (this.isAI) {
                     this.speed = 0.41;
@@ -652,14 +651,9 @@
             activateInvulnerability() {
                 this.isInvulnerable = true;
                 this.invulnerabilityTimer = Date.now();
-                this.createLightWall();
             }
             
-            createLightWall() {
-                // Create an invisible collision shield instead of visible wall
-                // This prevents the player from dying but doesn't show a visual wall
-                this.lightWall = null; // No visual wall needed
-            }
+
             
             checkInvulnerability() {
                 if (this.isInvulnerable) {
@@ -837,11 +831,6 @@
                     const collisionObstacles = [...trails, ...mapObjects];
 
                     for (const obstacle of collisionObstacles) {
-                        // Skip collision with player's own trail (even when invulnerable)
-                        if (obstacle.userData.owner === this) {
-                            continue; 
-                        }
-
                         const obstacleBox = new THREE.Box3().setFromObject(obstacle);
                         if (playerBox.intersectsBox(obstacleBox)) {
                             // If invulnerable, bounce back instead of dying
