@@ -641,6 +641,7 @@
                         this.createTrail(); // Start creating trail after invulnerability ends
                         // Reset visual appearance
                         this.visuals.material.emissiveIntensity = 1.0;
+                        console.log(`Player ${this.id + 1} invulnerability ended at position:`, this.mesh.position);
                     } else {
                         // Flash effect during invulnerability
                         const flashIntensity = 2.0 + Math.sin(this.invulnerabilityTimer * 0.3) * 1.0;
@@ -653,10 +654,42 @@
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
                 const MAX_TILT = Math.PI / 9;
-                const targetTilt = turnDirection * this.turnSpeed;
+                const targetTilt = turnDirection * MAX_TILT;
                 this.visuals.rotation.z = THREE.MathUtils.lerp(this.visuals.rotation.z, targetTilt, 0.1);
 
-                this.mesh.translateZ(-this.speed);
+                // Move the player
+                const newPosition = this.mesh.position.clone();
+                newPosition.translateZ(-this.speed);
+                
+                // During invulnerability, prevent moving into obstacles
+                if (this.invulnerable) {
+                    const collisionBox = this.mesh.getObjectByName("collisionBox");
+                    if (collisionBox) {
+                        const testMesh = this.mesh.clone();
+                        testMesh.position.copy(newPosition);
+                        const testBox = new THREE.Box3().setFromObject(testMesh);
+                        
+                        // Check if new position would be inside an obstacle
+                        const collisionObstacles = mapObjects.filter(obj => !obj.userData.isRamp);
+                        let wouldCollide = false;
+                        
+                        for (const obstacle of collisionObstacles) {
+                            const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+                            if (testBox.intersectsBox(obstacleBox)) {
+                                wouldCollide = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!wouldCollide) {
+                            this.mesh.position.copy(newPosition);
+                        }
+                    } else {
+                        this.mesh.position.copy(newPosition);
+                    }
+                } else {
+                    this.mesh.position.copy(newPosition);
+                }
                 
                 this.checkCollisions(opponents);
             }
@@ -802,6 +835,7 @@
 
                         const obstacleBox = new THREE.Box3().setFromObject(obstacle);
                         if (playerBox.intersectsBox(obstacleBox)) {
+                            console.log(`Player ${this.id + 1} died from collision with obstacle at position:`, obstacle.position);
                             this.die();
                             return;
                         }
@@ -1027,7 +1061,7 @@
             }
 
             const startY = 0.3;
-            const offset = gameSize / 3; 
+            const offset = gameSize / 2.5; // Increased from /3 to /2.5 for safer spawning 
             
             let activePlayerConfigs = [];
             
