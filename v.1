@@ -763,7 +763,7 @@
                 const collisionBox = this.mesh.getObjectByName("collisionBox");
                 if (collisionBox) {
                     const playerBox = new THREE.Box3().setFromObject(collisionBox);
-                    const collisionObstacles = [...trails, ...mapObjects];
+                    const collisionObstacles = [...trails, ...mapObjects.filter(obj => !obj.userData.isRamp)];
 
                     for (const obstacle of collisionObstacles) {
                          if (obstacle.userData.owner === this && obstacle.userData.lifetime > TRAIL_LIFETIME - 15) {
@@ -1060,7 +1060,7 @@
             mapObjects.push(centerBlock);
             console.log('Added center block at position:', centerBlock.position, 'with scale:', centerBlock.scale);
 
-            // Ramps
+            // Ramps - make them driveable, not deadly
             const rampGeo = new THREE.BoxGeometry(20, 1, 30);
             const rampPositions = [
                 {x: 0, z: -25, rotX: Math.PI / 8},
@@ -1074,6 +1074,7 @@
                 ramp.position.set(p.x, 0.5, p.z);
                 if(p.rotX) ramp.rotation.x = p.rotX;
                 if(p.rotZ) ramp.rotation.z = p.rotZ;
+                ramp.userData.isRamp = true; // Mark as non-deadly
                 scene.add(ramp);
                 mapObjects.push(ramp);
             });
