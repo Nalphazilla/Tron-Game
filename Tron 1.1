@@ -70,13 +70,14 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 2000;
-            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.9);
             border: 2px solid #00ff00;
             border-radius: 20px;
             padding: 20px 40px;
             text-align: center;
             box-shadow: 0 0 30px #00ff00;
+            pointer-events: none;
         }
         
         .start-invuln-countdown #countdownText {
@@ -233,6 +234,7 @@
             <p class="text-xs text-cyan-200 mb-4">Press 'I' to toggle debug screen.</p>
             <p class="text-xs text-cyan-200 mb-4">Press 'V' to activate invulnerability (5s).</p>
             <p class="text-xs text-green-400 mb-4">All players start with 3s invulnerability.</p>
+            <p class="text-xs text-yellow-400 mb-4">Press 'T' to test countdown display.</p>
             
             <!-- Map Selection -->
             <div>
@@ -365,7 +367,7 @@
         <div id="player2Score" class="player2-score hidden">P2: 0</div>
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
-        <div id="startInvulnCountdown" class="start-invuln-countdown hidden">
+        <div id="startInvulnCountdown" class="start-invuln-countdown hidden" style="display: none;">
             <span id="countdownText">3</span>
         </div>
     </div>
@@ -459,6 +461,9 @@
         // Start invulnerability countdown elements
         const startInvulnCountdown = document.getElementById('startInvulnCountdown');
         const countdownText = document.getElementById('countdownText');
+        
+        // Debug: Check if countdown elements exist
+        console.log('Countdown elements:', { startInvulnCountdown, countdownText });
         
         // Debug variables
         let debugVisible = false;
@@ -1124,6 +1129,7 @@
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
             startInvulnCountdown.classList.add('hidden');
+            startInvulnCountdown.style.display = 'none';
             loadMap(currentMap);
             resetGame(false);
         }
@@ -1157,6 +1163,7 @@
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.add('hidden');
             startInvulnCountdown.classList.add('hidden');
+            startInvulnCountdown.style.display = 'none';
             startMenu.classList.remove('hidden');
         }
 
@@ -1356,10 +1363,18 @@
             });
             
             // Update start invulnerability countdown
-            updateStartInvulnCountdown();
+            // Temporarily disabled to debug display issues
+            // updateStartInvulnCountdown();
         }
         
         function updateStartInvulnCountdown() {
+            // Only show countdown during actual gameplay
+            if (gameState !== 'PLAYING') {
+                startInvulnCountdown.classList.add('hidden');
+                startInvulnCountdown.style.display = 'none';
+                return;
+            }
+            
             // Check if any player has start invulnerability
             const playersWithStartInvuln = players.filter(p => 
                 p.isInvulnerable && p.invulnerabilityTimer <= p.startInvulnerabilityDuration
@@ -1374,16 +1389,21 @@
                     // Add scale animation when number changes
                     if (countdownText.textContent !== timeLeft.toString()) {
                         countdownText.classList.add('changing');
-                        setTimeout(() => countdownText.classList.remove('changing'), 100);
+                        setTimeout(() => countdownText.classList.remove('changing'), 10);
                     }
                     
                     countdownText.textContent = timeLeft;
                     startInvulnCountdown.classList.remove('hidden');
+                    startInvulnCountdown.style.display = 'block';
+                    console.log(`Showing countdown: ${timeLeft}s remaining`);
                 } else {
                     startInvulnCountdown.classList.add('hidden');
+                    startInvulnCountdown.style.display = 'none';
+                    console.log('Hiding countdown - time expired');
                 }
             } else {
                 startInvulnCountdown.classList.add('hidden');
+                startInvulnCountdown.style.display = 'none';
             }
         }
         
@@ -1414,6 +1434,7 @@
                 case 'c': cycleSpectator(); break;
                 case 'i': toggleDebugScreen(); break;
                 case 'v': activatePlayerInvulnerability(); break;
+                case 't': testCountdown(); break;
             }
         }
         function onKeyUp(event) {
@@ -1600,6 +1621,25 @@
                 console.log('Invulnerability activated for Player 1 - 5 seconds of invulnerability');
             } else {
                 console.log('No human player found or player is not alive');
+            }
+        }
+        
+        function testCountdown() {
+            console.log('Testing countdown display...');
+            if (startInvulnCountdown && countdownText) {
+                countdownText.textContent = '3';
+                startInvulnCountdown.classList.remove('hidden');
+                startInvulnCountdown.style.display = 'block';
+                console.log('Countdown should be visible now');
+                
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    startInvulnCountdown.classList.add('hidden');
+                    startInvulnCountdown.style.display = 'none';
+                    console.log('Countdown hidden');
+                }, 2000);
+            } else {
+                console.log('Countdown elements not found!');
             }
         }
 
