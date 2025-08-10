@@ -68,6 +68,40 @@
         .player2-score { color: #ff4100; }
         .player3-score { color: #ff0000; }
         .player4-score { color: #00ff80; }
+        
+        .invulnerability-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+            z-index: 1000;
+        }
+        
+        .invulnerability-indicator.hidden {
+            display: none;
+        }
+        
+        .invulnerability-text {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .invulnerability-timer {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+        }
         .score-color-p1 { color: #00ffff; }
         .score-color-p2 { color: #ff4100; }
         .score-color-p3 { color: #ff0000; }
@@ -331,6 +365,11 @@
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
     </div>
+    
+    <div id="invulnerabilityIndicator" class="invulnerability-indicator hidden">
+        <span class="invulnerability-text">INVULNERABLE</span>
+        <span class="invulnerability-timer">3.0s</span>
+    </div>
 
     <!-- Three.js and Post-processing scripts -->
     <script type="importmap">
@@ -402,6 +441,8 @@
             document.getElementById('player3Score'),
             document.getElementById('player4Score'),
         ];
+        
+        const invulnerabilityIndicator = document.getElementById('invulnerabilityIndicator');
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -1271,6 +1312,39 @@
             // Update score colors based on selected colors
             updateScoreColors();
         }
+        
+        function updateInvulnerabilityIndicator() {
+            // Find the human player (player 0)
+            const humanPlayer = players.find(p => p.id === 0 && p.isAlive);
+            
+            if (humanPlayer && humanPlayer.isInvulnerable) {
+                const remainingTime = Math.max(0, (humanPlayer.invulnerabilityDuration - (Date.now() - humanPlayer.invulnerabilityTimer)) / 1000);
+                const timerText = remainingTime.toFixed(1) + 's';
+                
+                invulnerabilityIndicator.querySelector('.invulnerability-timer').textContent = timerText;
+                invulnerabilityIndicator.classList.remove('hidden');
+                
+                // Change color based on remaining time
+                if (remainingTime > 2) {
+                    invulnerabilityIndicator.style.borderColor = '#00ff00';
+                    invulnerabilityIndicator.style.color = '#00ff00';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #00ff00';
+                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #00ff00';
+                } else if (remainingTime > 1) {
+                    invulnerabilityIndicator.style.borderColor = '#ffff00';
+                    invulnerabilityIndicator.style.color = '#ffff00';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ffff00';
+                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #ffff00';
+                } else {
+                    invulnerabilityIndicator.style.borderColor = '#ff0000';
+                    invulnerabilityIndicator.style.color = '#ff0000';
+                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ff0000';
+                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #ff0000';
+                }
+            } else {
+                invulnerabilityIndicator.classList.add('hidden');
+            }
+        }
 
         function updateScoreColors() {
             const p1Color = parseInt(p1ColorSelect.value);
@@ -1437,6 +1511,7 @@
             updateTrails();
             updateExplosions();
             updateAnnouncements();
+            updateInvulnerabilityIndicator();
             
             updateCamera();
             composer.render();
