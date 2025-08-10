@@ -64,6 +64,32 @@
             font-size: 1.5rem;
             text-shadow: 0 0 10px currentColor;
         }
+        
+        .start-invuln-countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 20px;
+            padding: 20px 40px;
+            text-align: center;
+            box-shadow: 0 0 30px #00ff00;
+        }
+        
+        .start-invuln-countdown #countdownText {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .start-invuln-countdown #countdownText.changing {
+            transform: scale(1.3);
+        }
         .player1-score { color: #00ffff; }
         .player2-score { color: #ff4100; }
         .player3-score { color: #ff0000; }
@@ -206,6 +232,7 @@
             <p class="text-xs text-cyan-200 mb-4">Press 'C' to cycle spectators when eliminated.</p>
             <p class="text-xs text-cyan-200 mb-4">Press 'I' to toggle debug screen.</p>
             <p class="text-xs text-cyan-200 mb-4">Press 'V' to activate invulnerability (5s).</p>
+            <p class="text-xs text-green-400 mb-4">All players start with 3s invulnerability.</p>
             
             <!-- Map Selection -->
             <div>
@@ -338,6 +365,9 @@
         <div id="player2Score" class="player2-score hidden">P2: 0</div>
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
+        <div id="startInvulnCountdown" class="start-invuln-countdown hidden">
+            <span id="countdownText">3</span>
+        </div>
     </div>
 
     <!-- Three.js and Post-processing scripts -->
@@ -425,6 +455,10 @@
         const debugRendererInfo = document.getElementById('debugRendererInfo');
         const debugPlayerDetails = document.getElementById('debugPlayerDetails');
         const debugInvulnerability = document.getElementById('debugInvulnerability');
+        
+        // Start invulnerability countdown elements
+        const startInvulnCountdown = document.getElementById('startInvulnCountdown');
+        const countdownText = document.getElementById('countdownText');
         
         // Debug variables
         let debugVisible = false;
@@ -690,6 +724,7 @@
                 this.isInvulnerable = false;
                 this.invulnerabilityTimer = 0;
                 this.invulnerabilityDuration = 300; // 5 seconds at 60fps
+                this.startInvulnerabilityDuration = 180; // 3 seconds at 60fps
                 
                 if (this.isAI) {
                     this.speed = 0.41;
@@ -707,6 +742,9 @@
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
+                
+                // Automatically activate start invulnerability for 3 seconds
+                this.activateStartInvulnerability();
             }
 
             activateInvulnerability() {
@@ -715,8 +753,17 @@
                 console.log(`Player ${this.id + 1} invulnerability activated - ${this.invulnerabilityDuration / 60} seconds`);
             }
 
+            activateStartInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = this.startInvulnerabilityDuration;
+                console.log(`Player ${this.id + 1} start invulnerability activated - ${this.startInvulnerabilityDuration / 60} seconds`);
+            }
+
             updateInvulnerability() {
                 if (this.isInvulnerable && this.invulnerabilityTimer > 0) {
+                    // Check if this is start invulnerability before decrementing
+                    const isStartInvuln = this.invulnerabilityTimer <= this.startInvulnerabilityDuration;
+                    
                     this.invulnerabilityTimer--;
                     
                     // Add pulsing effect when invulnerable
@@ -731,7 +778,9 @@
                     
                     if (this.invulnerabilityTimer <= 0) {
                         this.isInvulnerable = false;
-                        console.log(`Player ${this.id + 1} invulnerability expired`);
+                        const invulnType = isStartInvuln ? 'start' : 'manual';
+                        console.log(`Player ${this.id + 1} ${invulnType} invulnerability expired`);
+                        
                         // Reset visual effects
                         if (this.visuals) {
                             this.visuals.children.forEach(child => {
@@ -1074,6 +1123,7 @@
             startMenu.classList.add('hidden');
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
+            startInvulnCountdown.classList.add('hidden');
             loadMap(currentMap);
             resetGame(false);
         }
@@ -1106,6 +1156,7 @@
             gameState = 'MENU';
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.add('hidden');
+            startInvulnCountdown.classList.add('hidden');
             startMenu.classList.remove('hidden');
         }
 
@@ -1288,16 +1339,52 @@
                 if (scoreElems[index]) {
                     const scoreText = scoreElems[index].textContent;
                     if (player.isInvulnerable) {
-                        scoreElems[index].textContent = scoreText.replace(/🛡️?$/, '') + ' 🛡️';
-                        scoreElems[index].style.textShadow = '0 0 20px #ffff00, 0 0 30px #ffff00';
+                        // Determine if it's start invulnerability or manual
+                        const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                        const icon = isStartInvuln ? '🟢' : '🛡️';
+                        const glowColor = isStartInvuln ? '#00ff00' : '#ffff00';
+                        
+                        scoreElems[index].textContent = scoreText.replace(/[🛡️🟢]?$/, '') + ' ' + icon;
+                        scoreElems[index].style.textShadow = `0 0 20px ${glowColor}, 0 0 30px ${glowColor}`;
                         scoreElems[index].style.animation = 'pulse 0.5s ease-in-out infinite alternate';
                     } else {
-                        scoreElems[index].textContent = scoreText.replace(/🛡️?$/, '');
+                        scoreElems[index].textContent = scoreText.replace(/[🛡️🟢]?$/, '');
                         scoreElems[index].style.textShadow = '0 0 10px currentColor';
                         scoreElems[index].style.animation = 'none';
                     }
                 }
             });
+            
+            // Update start invulnerability countdown
+            updateStartInvulnCountdown();
+        }
+        
+        function updateStartInvulnCountdown() {
+            // Check if any player has start invulnerability
+            const playersWithStartInvuln = players.filter(p => 
+                p.isInvulnerable && p.invulnerabilityTimer <= p.startInvulnerabilityDuration
+            );
+            
+            if (playersWithStartInvuln.length > 0) {
+                // Show countdown for the first player with start invulnerability
+                const player = playersWithStartInvuln[0];
+                const timeLeft = Math.ceil(player.invulnerabilityTimer / 60);
+                
+                if (timeLeft > 0) {
+                    // Add scale animation when number changes
+                    if (countdownText.textContent !== timeLeft.toString()) {
+                        countdownText.classList.add('changing');
+                        setTimeout(() => countdownText.classList.remove('changing'), 100);
+                    }
+                    
+                    countdownText.textContent = timeLeft;
+                    startInvulnCountdown.classList.remove('hidden');
+                } else {
+                    startInvulnCountdown.classList.add('hidden');
+                }
+            } else {
+                startInvulnCountdown.classList.add('hidden');
+            }
         }
         
         function updateTrails() {
@@ -1468,7 +1555,11 @@
             let playerDetailsHTML = '';
             players.forEach((player, index) => {
                 const status = player.isAlive ? '🟢' : '🔴';
-                const invulnStatus = player.isInvulnerable ? '🛡️' : '';
+                let invulnStatus = '';
+                if (player.isInvulnerable) {
+                    const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                    invulnStatus = isStartInvuln ? '🟢' : '🛡️';
+                }
                 const pos = player.mesh ? player.mesh.position : { x: 0, y: 0, z: 0 };
                 const vel = player.velocity ? player.velocity : { x: 0, y: 0, z: 0 };
                 const type = player.isAI ? 'AI' : 'Human';
@@ -1488,7 +1579,10 @@
             players.forEach((player, index) => {
                 if (player.isInvulnerable) {
                     const timeLeft = (player.invulnerabilityTimer / 60).toFixed(1);
-                    invulnHTML += `<div class="text-xs text-yellow-400">P${index + 1}: ${timeLeft}s remaining</div>`;
+                    const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                    const invulnType = isStartInvuln ? 'START' : 'MANUAL';
+                    const color = isStartInvuln ? 'text-green-400' : 'text-yellow-400';
+                    invulnHTML += `<div class="text-xs ${color}">P${index + 1}: ${timeLeft}s remaining (${invulnType})</div>`;
                 }
             });
             if (invulnHTML === '') {
