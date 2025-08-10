@@ -1,0 +1,1300 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Tron Light Cycle Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #gameCanvas {
+            display: block;
+        }
+        .ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .ui-element {
+            pointer-events: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 0 20px #00ffff, inset 0 0 10px #00ffff;
+            width: 350px;
+        }
+        .btn {
+            background-color: #00ffff;
+            color: #000000;
+            padding: 0.75rem 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 0 10px #00ffff;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #ffffff;
+            box-shadow: 0 0 20px #ffffff, 0 0 30px #00ffff;
+        }
+        .score-display {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px currentColor;
+        }
+        .player1-score { color: #00ffff; }
+        .player2-score { color: #ff4100; }
+        .player3-score { color: #ff0000; }
+        .player4-score { color: #00ff80; }
+        .score-color-p1 { color: #00ffff; }
+        .score-color-p2 { color: #ff4100; }
+        .score-color-p3 { color: #ff0000; }
+        .score-color-p4 { color: #00ff80; }
+        #mapSelect {
+            background-color: #001a1a;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 100%;
+            margin-top: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+        }
+        #mapSelect:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        #modeSelect {
+            background-color: #001a1a;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 100%;
+            margin-top: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+        }
+        #modeSelect:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        .color-select {
+            background-color: #001a1a;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            min-width: 80px;
+        }
+        .color-select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #00ffff;
+        }
+
+        .color-option {
+            padding: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00ffff;
+        }
+        .color-option:hover {
+            background-color: #003333;
+        }
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .player-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #00ffff;
+        }
+        .player-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px currentColor;
+        }
+        .player-circle.selected {
+            border: 3px solid #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Elements -->
+    <div id="uiContainer" class="ui-container">
+        <div id="startMenu" class="ui-element">
+            <h1 class="text-4xl font-bold mb-4 text-cyan-300" style="text-shadow: 0 0 10px #00ffff;">TRON 3D</h1>
+            <div id="controls-display" class="text-left text-sm mb-4 grid grid-cols-2 gap-x-4">
+                <p><strong class="text-cyan-400">P1:</strong> A/D</p>
+                <p><strong style="color: #ff4100;">P2:</strong> L/R Arrows</p>
+                <p><strong style="color: #ff0000;">P3:</strong> J/L</p>
+                <p><strong style="color: #00ff80;">P4:</strong> 4/6 Numpad</p>
+            </div>
+            <p class="text-xs text-cyan-200 mb-4">Press 'C' to cycle spectators when eliminated.</p>
+            
+            <!-- Map Selection -->
+            <div>
+                <label for="mapSelect" class="block text-cyan-300 mb-2">SELECT MAP</label>
+                <select id="mapSelect">
+                    <option value="The Grid">The Grid</option>
+                    <option value="The Arena">The Arena</option>
+                </select>
+            </div>
+
+            <!-- Game Mode Selection -->
+            <div>
+                <label for="modeSelect" class="block text-cyan-300 mb-2">GAME MODE</label>
+                <select id="modeSelect">
+                    <option value="pvp">Player vs Player</option>
+                    <option value="pva">Player vs AI</option>
+                    <option value="1v3AI">1 Player vs 3 AI</option>
+                    <option value="4FFA">4 Player</option>
+                </select>
+            </div>
+
+            <!-- Color Selection -->
+            <div>
+                <label class="block text-cyan-300 mb-2">PLAYER COLORS</label>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div id="p1ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P1</span>
+                        <div class="color-preview player-circle" id="p1ColorPreview" style="background-color: #00ffff;"></div>
+                    </div>
+                    <div id="p2ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P2</span>
+                        <div class="color-preview player-circle" id="p2ColorPreview" style="background-color: #ff4100;"></div>
+                    </div>
+                    <div id="p3ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P3</span>
+                        <div class="color-preview player-circle" id="p3ColorPreview" style="background-color: #ff0000;"></div>
+                    </div>
+                    <div id="p4ColorContainer" class="flex items-center space-x-2">
+                        <span class="text-xs text-cyan-200">P4</span>
+                        <div class="color-preview player-circle" id="p4ColorPreview" style="background-color: #00ff80;"></div>
+                    </div>
+                </div>
+                
+                <!-- Color Options (hidden by default) -->
+                <div id="colorOptions" class="hidden">
+                    <div class="text-xs text-cyan-200 mb-2">Select Color for <span id="selectedPlayerText">P1</span>:</div>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <div class="color-option" data-hex="0x00ffff" data-css="#00ffff" data-name="Cyan">
+                            <div class="color-preview" style="background-color: #00ffff;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff4100" data-css="#ff4100" data-name="Orange">
+                            <div class="color-preview" style="background-color: #ff4100;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff0000" data-css="#ff0000" data-name="Red">
+                            <div class="color-preview" style="background-color: #ff0000;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x00ff80" data-css="#00ff80" data-name="Green">
+                            <div class="color-preview" style="background-color: #00ff80;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xff69b4" data-css="#ff69b4" data-name="Pink">
+                            <div class="color-preview" style="background-color: #ff69b4;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x800080" data-css="#800080" data-name="Purple">
+                            <div class="color-preview" style="background-color: #800080;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xffff00" data-css="#ffff00" data-name="Yellow">
+                            <div class="color-preview" style="background-color: #ffff00;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0xffffff" data-css="#ffffff" data-name="White">
+                            <div class="color-preview" style="background-color: #ffffff;"></div>
+                        </div>
+                        <div class="color-option" data-hex="0x20b2aa" data-css="#20b2aa" data-name="Teal">
+                            <div class="color-preview" style="background-color: #20b2aa;"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <button id="startGameButton" class="btn">START GAME</button>
+        </div>
+
+        <div id="gameOverMenu" class="ui-element hidden">
+            <h2 id="winnerText" class="text-3xl font-bold mb-4"></h2>
+            <button id="playAgainButton" class="btn">Play Again</button>
+            <button id="backToMenuButton" class="btn">Back to Menu</button>
+        </div>
+
+        <div id="deathMessage" class="ui-element hidden text-red-500 border-red-500" style="box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000;">
+            <h2 class="text-4xl font-bold">YOU DIED</h2>
+        </div>
+    </div>
+    
+    <div id="spectateMessage" class="hidden" style="position: absolute; bottom: 20px; width: 100%; text-align: center; pointer-events: none;">
+        <div class="inline-block p-4 rounded-lg" style="background-color: rgba(0,0,0,0.7); border: 1px solid #00ffff; box-shadow: 0 0 20px #00ffff;">
+            <p class="text-lg font-bold text-cyan-300">SPECTATING</p>
+            <p class="text-sm">Press 'C' to cycle players</p>
+        </div>
+    </div>
+
+
+    <div id="scoreContainer" class="score-display">
+        <div id="player1Score" class="player1-score hidden">P1: 0</div>
+        <div id="player2Score" class="player2-score hidden">P2: 0</div>
+        <div id="player3Score" class="player3-score hidden">P3: 0</div>
+        <div id="player4Score" class="player4-score hidden">P4: 0</div>
+    </div>
+
+    <!-- Three.js and Post-processing scripts -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // --- SCENE SETUP ---
+        let scene, camera, renderer, composer;
+        const gameSize = 200;
+        let gameState = 'MENU';
+        let gameMode = 'pvp';
+        let currentMap = 'The Grid';
+
+        // --- CAMERA CONTROLS ---
+        let cameraDistance = 3;
+        const MIN_CAMERA_DISTANCE = 3;
+        const MAX_CAMERA_DISTANCE = 50;
+        let spectatorTarget = null;
+
+        // --- GAME OBJECTS ---
+        let players = [];
+        let trails = [];
+        let boundaryWalls = [];
+        let mapObjects = [];
+        let explosions = [];
+        let announcements = [];
+        let scores = [0, 0, 0, 0];
+        let gameWinner = null;
+        const TRAIL_LIFETIME = 300;
+
+        // --- CONTROLS STATE ---
+        const keys = {
+            p1_left: false, p1_right: false,
+            p2_left: false, p2_right: false,
+            p3_left: false, p3_right: false,
+            p4_left: false, p4_right: false,
+        };
+
+        // --- UI ELEMENTS ---
+        const startMenu = document.getElementById('startMenu');
+        const gameOverMenu = document.getElementById('gameOverMenu');
+        const winnerText = document.getElementById('winnerText');
+        const deathMessage = document.getElementById('deathMessage');
+        const spectateMessage = document.getElementById('spectateMessage');
+        const modeSelect = document.getElementById('modeSelect');
+        const startGameButton = document.getElementById('startGameButton');
+        // Color selection variables for custom dropdowns
+        let p1ColorValue = 0x00ffff;
+        let p2ColorValue = 0xff4100;
+        let p3ColorValue = 0xff0000;
+        let p4ColorValue = 0x00ff80;
+        const playAgainButton = document.getElementById('playAgainButton');
+        const backToMenuButton = document.getElementById('backToMenuButton');
+        const scoreContainer = document.getElementById('scoreContainer');
+        const mapSelect = document.getElementById('mapSelect');
+        const scoreElems = [
+            document.getElementById('player1Score'),
+            document.getElementById('player2Score'),
+            document.getElementById('player3Score'),
+            document.getElementById('player4Score'),
+        ];
+
+        function init() {
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000510);
+            scene.fog = new THREE.Fog(scene.background, gameSize * 0.5, gameSize * 1.5);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+
+            scene.add(new THREE.AmbientLight(0x404040, 3));
+            scene.add(new THREE.DirectionalLight(0xffffff, 1.5));
+            createEnvironment();
+            
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.5, 0.8);
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            // --- EVENT LISTENERS ---
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            window.addEventListener('wheel', onMouseWheel, false);
+            startGameButton.addEventListener('click', startGame);
+            playAgainButton.addEventListener('click', resetGame);
+            backToMenuButton.addEventListener('click', backToMenu);
+            mapSelect.addEventListener('change', (e) => { currentMap = e.target.value; });
+            modeSelect.addEventListener('change', (e) => { gameMode = e.target.value; updatePlayerColorVisibility(); });
+            
+            // Initialize default colors
+            updateScoreColors();
+            updatePlayerColorVisibility(); // Call this to set initial visibility
+            
+            // Add event listeners for color selection
+            document.getElementById('p1ColorPreview').addEventListener('click', () => selectPlayer('p1'));
+            document.getElementById('p2ColorPreview').addEventListener('click', () => selectPlayer('p2'));
+            document.getElementById('p3ColorPreview').addEventListener('click', () => selectPlayer('p3'));
+            document.getElementById('p4ColorPreview').addEventListener('click', () => selectPlayer('p4'));
+            
+            // Add event listeners for color options
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const hexValue = option.dataset.hex;
+                    const cssColor = option.dataset.css;
+                    const colorName = option.dataset.name;
+                    selectColor(hexValue, cssColor, colorName);
+                });
+            });
+
+            animate();
+        }
+
+
+
+        let selectedPlayer = null;
+        
+        function selectPlayer(player) {
+            // Remove selection from all players
+            document.querySelectorAll('.player-circle').forEach(circle => {
+                circle.classList.remove('selected');
+            });
+            
+            // Select the clicked player
+            selectedPlayer = player;
+            document.getElementById(player + 'ColorPreview').classList.add('selected');
+            document.getElementById('selectedPlayerText').textContent = player.toUpperCase();
+            document.getElementById('colorOptions').classList.remove('hidden');
+        }
+        
+        function selectColor(hexValue, cssColor, colorName) {
+            if (!selectedPlayer) return;
+            
+            // Update the color value
+            if (selectedPlayer === 'p1') p1ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p2') p2ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p3') p3ColorValue = parseInt(hexValue);
+            else if (selectedPlayer === 'p4') p4ColorValue = parseInt(hexValue);
+            
+            // Update the preview
+            document.getElementById(selectedPlayer + 'ColorPreview').style.backgroundColor = cssColor;
+            
+            // Remove selection styling
+            document.getElementById(selectedPlayer + 'ColorPreview').classList.remove('selected');
+            
+            // Hide color options
+            document.getElementById('colorOptions').classList.add('hidden');
+            selectedPlayer = null;
+            
+            // Update score colors if game is running
+            updateScoreColors();
+        }
+
+
+
+        function updatePlayerColorVisibility() {
+            const p1Container = document.getElementById('p1ColorContainer');
+            const p2Container = document.getElementById('p2ColorContainer');
+            const p3Container = document.getElementById('p3ColorContainer');
+            const p4Container = document.getElementById('p4ColorContainer');
+            
+            // Hide all first
+            p1Container.style.display = 'none';
+            p2Container.style.display = 'none';
+            p3Container.style.display = 'none';
+            p4Container.style.display = 'none';
+            
+            // Show relevant players based on game mode
+            if (gameMode === 'pvp' || gameMode === 'pva') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+            } else if (gameMode === '1v3AI' || gameMode === '4FFA') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+                p3Container.style.display = 'block';
+                p4Container.style.display = 'block';
+            }
+        }
+
+        function createEnvironment() {
+            const floorGeo = new THREE.PlaneGeometry(gameSize, gameSize);
+            const gridTexture = createGridTexture();
+            gridTexture.wrapS = THREE.RepeatWrapping;
+            gridTexture.wrapT = THREE.RepeatWrapping;
+            gridTexture.repeat.set(20, 20);
+
+            const floorMat = new THREE.MeshStandardMaterial({
+                map: gridTexture, metalness: 0.8, roughness: 0.4,
+                emissive: 0x00ffff, emissiveMap: gridTexture, emissiveIntensity: 0.2
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            const wallHeight = 20;
+            const wallGeo = new THREE.BoxGeometry(gameSize, wallHeight, 1);
+            const wallMat = new THREE.MeshStandardMaterial({ 
+                color: 0x001122, metalness: 0.5, roughness: 0.5, 
+                transparent: true, opacity: 0.15
+            });
+            
+            const wallPositions = [
+                { x: 0, z: -gameSize/2, rotY: 0 }, { x: 0, z: gameSize/2, rotY: 0 },
+                { x: -gameSize/2, z: 0, rotY: Math.PI/2 }, { x: gameSize/2, z: 0, rotY: Math.PI/2 },
+            ];
+
+            wallPositions.forEach(p => {
+                const wall = new THREE.Mesh(wallGeo.clone(), wallMat);
+                wall.position.set(p.x, wallHeight / 2, p.z);
+                wall.rotation.y = p.rotY;
+                scene.add(wall);
+                boundaryWalls.push(wall);
+                
+                const edges = new THREE.EdgesGeometry(wall.geometry);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                wall.add(wireframe);
+            });
+        }
+
+        function createGridTexture() {
+            const size = 512;
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2;
+            ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 10;
+            const step = size / 16;
+            for (let i = 0; i <= size; i += step) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createLightCycleModel(color) {
+            const group = new THREE.Group();
+            const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x101010, metalness: 0.9, roughness: 0.3 });
+            const lightMaterial = new THREE.MeshStandardMaterial({ 
+                color: color, 
+                emissive: color, 
+                emissiveIntensity: (color.getHex() === 0x20b2aa || color.getHex() === 0x800080) ? 20.0 : 
+                                  (color.getHex() === 0xff4100 || color.getHex() === 0xff0000) ? 8.0 :
+                                  (color.getHex() === 0x00ff80) ? 12.0 :
+                                  (color.getHex() === 0xffff00 || color.getHex() === 0xffffff || color.getHex() === 0x0000ff) ? 2.0 : 4.0, 
+                toneMapped: false 
+            });
+
+            const bodyCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0.5, -2.2), new THREE.Vector3(0, 1.0, -1.0),
+                new THREE.Vector3(0, 0.6, 1.0), new THREE.Vector3(0, 0.5, 2.2)
+            ]);
+            const bodyGeo = new THREE.TubeGeometry(bodyCurve, 64, 0.6, 8, false); 
+            const body = new THREE.Mesh(bodyGeo, darkMaterial);
+            group.add(body);
+            
+            const fenderCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0.5, 1.5), new THREE.Vector3(0, 0.9, 1.8), new THREE.Vector3(0, 0.5, 2.1)
+            ]);
+            const fenderGeo = new THREE.TubeGeometry(fenderCurve, 32, 0.2, 8, false);
+            const fender = new THREE.Mesh(fenderGeo, darkMaterial);
+            group.add(fender);
+
+            const wheelGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.8, 32); 
+            const wheelMat = new THREE.MeshBasicMaterial({color: 0x111111});
+            
+            const frontWheel = new THREE.Mesh(wheelGeo, wheelMat);
+            frontWheel.rotation.z = Math.PI / 2;
+            frontWheel.position.set(0, 0.5, 1.8);
+            group.add(frontWheel);
+
+            const backWheel = new THREE.Mesh(wheelGeo, wheelMat);
+            backWheel.rotation.z = Math.PI / 2;
+            backWheel.position.set(0, 0.5, -1.8);
+            group.add(backWheel);
+
+            const wheelGlowGeo = new THREE.TorusGeometry(0.8, 0.05, 16, 32);
+            const glow = new THREE.Mesh(wheelGlowGeo, lightMaterial);
+            glow.rotation.x = Math.PI / 2;
+            
+            frontWheel.add(glow.clone());
+            backWheel.add(glow.clone());
+            
+            const collisionBoxGeo = new THREE.BoxGeometry(0.8, 1.5, 5);
+            const collisionBoxMat = new THREE.MeshBasicMaterial({ visible: false });
+            const collisionBox = new THREE.Mesh(collisionBoxGeo, collisionBoxMat);
+            collisionBox.name = "collisionBox";
+            collisionBox.position.y = 0.75;
+            group.add(collisionBox);
+
+            return group;
+        }
+
+        class Player {
+            constructor(id, color, position, rotationY, isAI = false) {
+                this.id = id;
+                this.isAlive = true; this.isAI = isAI;
+                this.speed = 0.4; this.turnSpeed = 0.05;
+                this.color = color;
+                
+                this.startPosition = position.clone();
+                this.startRotationY = rotationY;
+                
+                this.mesh = new THREE.Group();
+                this.visuals = createLightCycleModel(this.color);
+                this.mesh.add(this.visuals);
+
+                this.mesh.position.copy(this.startPosition);
+                this.mesh.rotation.y = this.startRotationY;
+                
+                if (this.isAI) {
+                    this.speed = 0.41;
+                    this.aiDecisionCooldown = 0;
+                    this.aiCurrentTurn = 0;
+                    this.aiDecisionInterval = 10; 
+                }
+            }
+
+            reset() {
+                this.isAlive = true;
+                this.mesh.position.copy(this.startPosition);
+                this.mesh.rotation.y = this.startRotationY;
+                this.visuals.rotation.z = 0;
+                scene.add(this.mesh);
+            }
+
+            update(turnDirection, opponents) {
+                if (!this.isAlive) return;
+                
+                this.mesh.rotation.y += turnDirection * this.turnSpeed;
+
+                const MAX_TILT = Math.PI / 9;
+                const targetTilt = turnDirection * MAX_TILT;
+                this.visuals.rotation.z = THREE.MathUtils.lerp(this.visuals.rotation.z, targetTilt, 0.1);
+
+                this.mesh.translateZ(-this.speed);
+                
+                this.createTrail();
+                this.checkCollisions(opponents);
+            }
+            
+            updateAI(opponents) {
+                if (!this.isAlive) return;
+                const turn = this.makeAIDecision(opponents);
+                this.update(turn, opponents);
+            }
+
+            makeAIDecision(opponents) {
+                if (this.aiDecisionCooldown > 0) {
+                    this.aiDecisionCooldown--;
+                    return this.aiCurrentTurn;
+                }
+                this.aiDecisionCooldown = this.aiDecisionInterval;
+
+                const livingOpponents = opponents.filter(p => p.isAlive && p.id !== this.id);
+                if (livingOpponents.length === 0) return 0;
+
+                let targetOpponent;
+                if (gameMode === '1v3AI') {
+                    targetOpponent = players.find(p => p.id === 0 && p.isAlive) || livingOpponents[0];
+                } else {
+                    targetOpponent = livingOpponents.reduce((closest, opp) => 
+                        this.mesh.position.distanceTo(opp.mesh.position) < this.mesh.position.distanceTo(closest.mesh.position) ? opp : closest
+                    );
+                }
+
+                const otherPlayerTrails = trails.filter(trail => trail.userData.owner !== this);
+                const opponentCollisionBoxes = livingOpponents.map(p => p.mesh.getObjectByName("collisionBox"));
+                const obstacles = [...otherPlayerTrails, ...boundaryWalls, ...opponentCollisionBoxes, ...mapObjects];
+
+                const currentPos = this.mesh.position;
+                const forwardVec = new THREE.Vector3(0, 0, -1).applyQuaternion(this.mesh.quaternion);
+                const rayOrigin = currentPos.clone().add(forwardVec.clone().multiplyScalar(2.5));
+
+                const whiskers = {
+                    forward: forwardVec.clone(),
+                    left45: new THREE.Vector3(-0.7, 0, -0.7).applyQuaternion(this.mesh.quaternion),
+                    right45: new THREE.Vector3(0.7, 0, -0.7).applyQuaternion(this.mesh.quaternion),
+                    left90: new THREE.Vector3(-1, 0, 0).applyQuaternion(this.mesh.quaternion),
+                    right90: new THREE.Vector3(1, 0, 0).applyQuaternion(this.mesh.quaternion),
+                };
+
+                const raycaster = new THREE.Raycaster();
+                const distances = {};
+                for (const key in whiskers) {
+                    raycaster.set(rayOrigin, whiskers[key]);
+                    const intersects = raycaster.intersectObjects(obstacles, true);
+                    distances[key] = intersects.length > 0 ? intersects[0].distance : Infinity;
+                }
+                
+                const survivalDistance = 30;
+                if (distances.forward < survivalDistance || distances.left45 < survivalDistance / 1.5 || distances.right45 < survivalDistance / 1.5) {
+                    this.aiCurrentTurn = (distances.left90 > distances.right90) ? 1 : -1;
+                    return this.aiCurrentTurn;
+                }
+
+                const opponentForwardVec = new THREE.Vector3(0, 0, -1).applyQuaternion(targetOpponent.mesh.quaternion);
+                const distanceToOpponent = this.mesh.position.distanceTo(targetOpponent.mesh.position);
+                
+                const lookAheadFactor = THREE.MathUtils.clamp(distanceToOpponent * 0.75, 10, 60); 
+                const predictedOpponentPos = targetOpponent.mesh.position.clone().add(opponentForwardVec.multiplyScalar(lookAheadFactor));
+                
+                const vectorToTarget = predictedOpponentPos.sub(this.mesh.position);
+                const angleToTarget = forwardVec.angleTo(vectorToTarget);
+                const cross = new THREE.Vector3().crossVectors(forwardVec, vectorToTarget);
+
+                const turnThreshold = 0.2;
+                if (angleToTarget > turnThreshold) {
+                    this.aiCurrentTurn = (cross.y > 0) ? 1 : -1;
+                } else {
+                    this.aiCurrentTurn = 0;
+                }
+                return this.aiCurrentTurn;
+            }
+
+            createTrail() {
+                // Custom brightness for each color
+                let intensity = 2.0; // Default
+                const colorHex = this.color.getHex();
+                
+                if (colorHex === 0x20b2aa || colorHex === 0x800080) {
+                    intensity = 10.0; // Teal & Purple x5
+                } else if (colorHex === 0xff4100 || colorHex === 0xff0000) {
+                    intensity = 4.0; // Orange & Red x2
+                } else if (colorHex === 0x00ff80) {
+                    intensity = 6.0; // Green x3
+                } else if (colorHex === 0xffff00 || colorHex === 0xffffff || colorHex === 0x0000ff) {
+                    intensity = 1.0; // Yellow, White, Blue ÷2
+                }
+                
+                const trailMaterial = new THREE.MeshStandardMaterial({
+                    color: this.color, emissive: this.color, emissiveIntensity: intensity,
+                    transparent: true, opacity: 1.0, side: THREE.DoubleSide,
+                    toneMapped: false
+                });
+                const wallHeight = 0.9;
+                const trailGeo = new THREE.BoxGeometry(0.2, wallHeight, 1.5);
+                const trailSegment = new THREE.Mesh(trailGeo, trailMaterial);
+                
+                const backOffset = new THREE.Vector3(0, 0, 2.5);
+                backOffset.applyQuaternion(this.mesh.quaternion);
+                const trailPos = this.mesh.position.clone().add(backOffset);
+
+                trailPos.y = wallHeight / 2;
+                trailSegment.position.copy(trailPos);
+                trailSegment.rotation.copy(this.mesh.rotation);
+                trailSegment.userData.lifetime = TRAIL_LIFETIME;
+                trailSegment.userData.owner = this;
+
+                scene.add(trailSegment);
+                trails.push(trailSegment);
+            }
+
+            checkCollisions(allPlayers) {
+                for (const opponent of allPlayers) {
+                    if (opponent.id !== this.id && opponent.isAlive) {
+                        if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
+                            this.die(); opponent.die(); return;
+                        }
+                    }
+                }
+
+                const headPos = this.mesh.position;
+                const halfSize = gameSize / 2;
+                if (Math.abs(headPos.x) > halfSize || Math.abs(headPos.z) > halfSize) {
+                    this.die(); return;
+                }
+                
+                const collisionBox = this.mesh.getObjectByName("collisionBox");
+                if (collisionBox) {
+                    const playerBox = new THREE.Box3().setFromObject(collisionBox);
+                    const collisionObstacles = [...trails, ...mapObjects];
+
+                    for (const obstacle of collisionObstacles) {
+                         if (obstacle.userData.owner === this && obstacle.userData.lifetime > TRAIL_LIFETIME - 15) {
+                            continue; 
+                        }
+
+                        const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+                        if (playerBox.intersectsBox(obstacleBox)) {
+                            this.die();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            die() {
+                if (!this.isAlive) return;
+                this.isAlive = false;
+                
+                if (this.id === 0) { // Only show popups for the human player
+                    deathMessage.classList.remove('hidden');
+                    setTimeout(() => deathMessage.classList.add('hidden'), 2000);
+                    spectateMessage.classList.remove('hidden');
+                }
+
+                createDeathAnnouncement(this);
+                updateSpectatorOnDeath(this);
+                createExplosion(this.mesh.position, this.color);
+                scene.remove(this.mesh);
+                checkWinCondition();
+            }
+        }
+        
+        function createExplosion(position, color) {
+            const explosion = { particles: [], lifetime: 60 };
+            const particleCount = 100;
+            const particleMat = new THREE.PointsMaterial({
+                color: color, size: 0.5, transparent: true, blending: THREE.AdditiveBlending
+            });
+            const vertices = [];
+            for (let i = 0; i < particleCount; i++) {
+                vertices.push(0, 0, 0);
+            }
+            const particleGeo = new THREE.BufferGeometry();
+            particleGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            const points = new THREE.Points(particleGeo, particleMat);
+            points.position.copy(position);
+
+            for (let i = 0; i < particleCount; i++) {
+                explosion.particles.push({
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2
+                    ),
+                    index: i
+                });
+            }
+            explosion.mesh = points;
+            scene.add(explosion.mesh);
+            explosions.push(explosion);
+        }
+
+        function updateExplosions() {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const ex = explosions[i];
+                ex.lifetime--;
+                ex.mesh.material.opacity = ex.lifetime / 60;
+                const positions = ex.mesh.geometry.attributes.position.array;
+
+                ex.particles.forEach(p => {
+                    positions[p.index * 3] += p.velocity.x * 0.1;
+                    positions[p.index * 3 + 1] += p.velocity.y * 0.1;
+                    positions[p.index * 3 + 2] += p.velocity.z * 0.1;
+                });
+                ex.mesh.geometry.attributes.position.needsUpdate = true;
+
+                if (ex.lifetime <= 0) {
+                    scene.remove(ex.mesh);
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+        
+        function createDeathAnnouncement(player) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const fontSize = 64;
+            context.font = `bold ${fontSize}px Orbitron`;
+            const text = `PLAYER ${player.id + 1} ELIMINATED`;
+            const textWidth = context.measureText(text).width;
+            
+            canvas.width = textWidth;
+            canvas.height = fontSize * 1.2;
+
+            context.font = `bold ${fontSize}px Orbitron`;
+            context.fillStyle = `#${player.color.getHexString()}`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.MeshStandardMaterial({
+                map: texture,
+                transparent: true,
+                opacity: 1.0,
+                color: 0xffffff,
+                emissive: player.color,
+                emissiveIntensity: (player.color.getHex() === 0x008080 || player.color.getHex() === 0xffffff) ? 15.0 : 
+                                  (player.color.getHex() === 0xff4100 || player.color.getHex() === 0xff0000) ? 6.0 :
+                                  (player.color.getHex() === 0x00ff80) ? 9.0 :
+                                  (player.color.getHex() === 0xffff00 || player.color.getHex() === 0x0000ff) ? 1.5 : 3.0,
+                toneMapped: false
+            });
+            const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
+
+            const baseY = 10;
+            const spacing = 4.0;
+            const yPos = baseY - (announcements.length * spacing);
+
+            const announcementMeshes = [];
+            boundaryWalls.forEach(wall => {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.copy(wall.position);
+                mesh.quaternion.copy(wall.quaternion);
+                mesh.position.y = yPos;
+                mesh.translateZ(0.6);
+
+                scene.add(mesh);
+                announcementMeshes.push(mesh);
+            });
+
+            announcements.push({ meshes: announcementMeshes, lifetime: 120 });
+        }
+
+        function updateAnnouncements() {
+            for (let i = announcements.length - 1; i >= 0; i--) {
+                const announcement = announcements[i];
+                announcement.lifetime--;
+
+                if (announcement.lifetime <= 0) {
+                    announcement.meshes.forEach(mesh => {
+                        scene.remove(mesh);
+                        mesh.geometry.dispose();
+                        if(mesh.material.map) mesh.material.map.dispose();
+                        mesh.material.dispose();
+                    });
+                    announcements.splice(i, 1);
+                }
+            }
+
+            const baseY = 10;
+            const spacing = 4.0;
+            for (let i = 0; i < announcements.length; i++) {
+                const announcement = announcements[i];
+                const targetY = baseY - (i * spacing);
+
+                let opacity = 1.0;
+                if (announcement.lifetime < 30) {
+                    opacity = Math.max(0, announcement.lifetime / 30);
+                }
+
+                announcement.meshes.forEach(mesh => {
+                    mesh.position.y = THREE.MathUtils.lerp(mesh.position.y, targetY, 0.1);
+                    mesh.material.opacity = opacity;
+                });
+            }
+        }
+
+        function startGame() {
+            startMenu.classList.add('hidden');
+            gameOverMenu.classList.add('hidden');
+            scoreContainer.classList.remove('hidden');
+            loadMap(currentMap);
+            resetGame(false);
+        }
+
+        function cleanupGame() {
+            trails.forEach(trail => scene.remove(trail));
+            trails = [];
+            explosions.forEach(ex => scene.remove(ex.mesh));
+            explosions = [];
+            announcements.forEach(announcement => {
+                announcement.meshes.forEach(mesh => {
+                    scene.remove(mesh);
+                    mesh.geometry.dispose();
+                    if(mesh.material.map) mesh.material.map.dispose();
+                    mesh.material.dispose();
+                });
+            });
+            announcements = [];
+            players.forEach(p => scene.remove(p.mesh));
+            players = [];
+            gameWinner = null;
+            spectatorTarget = null;
+            deathMessage.classList.add('hidden');
+            spectateMessage.classList.add('hidden');
+            cleanupMap();
+        }
+
+        function backToMenu() {
+            cleanupGame();
+            gameState = 'MENU';
+            gameOverMenu.classList.add('hidden');
+            scoreContainer.classList.add('hidden');
+            startMenu.classList.remove('hidden');
+        }
+
+        function resetGame(keepScores = true) {
+            cleanupGame();
+            if (!keepScores) {
+                scores = [0, 0, 0, 0];
+            }
+
+            const startY = 0.3;
+            const offset = gameSize / 3; 
+            
+            let activePlayerConfigs = [];
+            
+            // Get selected colors from custom dropdowns
+            const p1Color = p1ColorValue;
+            const p2Color = p2ColorValue;
+            const p3Color = p3ColorValue;
+            const p4Color = p4ColorValue;
+            
+            if (gameMode === 'pvp' || gameMode === 'pva') {
+                activePlayerConfigs.push({ id: 0, color: p1Color, pos: new THREE.Vector3(-offset, startY, 0), rot: -Math.PI / 2 });
+                activePlayerConfigs.push({ id: 1, color: p2Color, pos: new THREE.Vector3(offset, startY, 0), rot: Math.PI / 2 });
+            } else {
+                activePlayerConfigs = [
+                    { id: 0, color: p1Color, pos: new THREE.Vector3(-offset, startY, offset), rot: -Math.PI / 2 },
+                    { id: 1, color: p2Color, pos: new THREE.Vector3(offset, startY, offset), rot: 0 },
+                    { id: 2, color: p3Color, pos: new THREE.Vector3(offset, startY, -offset), rot: Math.PI / 2 },
+                    { id: 3, color: p4Color, pos: new THREE.Vector3(-offset, startY, -offset), rot: Math.PI },
+                ];
+            }
+
+            players = activePlayerConfigs.map(config => {
+                let isAI = false;
+                if ((gameMode === 'pva' && config.id === 1) || (gameMode === '1v3AI' && config.id > 0)) {
+                    isAI = true;
+                }
+                return new Player(config.id, new THREE.Color(config.color), config.pos, config.rot, isAI);
+            });
+
+            players.forEach(p => p.reset());
+            updateScores();
+            
+            gameState = 'PLAYING';
+            gameOverMenu.classList.add('hidden');
+        }
+        
+        // --- MAP FUNCTIONS ---
+        function cleanupMap() {
+            mapObjects.forEach(obj => {
+                scene.remove(obj);
+                obj.geometry.dispose();
+                // If material is an array, dispose each one
+                if (Array.isArray(obj.material)) {
+                    obj.material.forEach(m => m.dispose());
+                } else {
+                    obj.material.dispose();
+                }
+            });
+            mapObjects = [];
+        }
+
+        function loadMap(mapName) {
+            cleanupMap();
+            if (mapName === 'The Arena') {
+                createArenaObstacles();
+            }
+        }
+
+        function createArenaObstacles() {
+            const obstacleMat = new THREE.MeshStandardMaterial({
+                color: 0x444466,
+                metalness: 0.3,
+                roughness: 0.7,
+                emissive: 0x222244,
+                emissiveIntensity: 0.3,
+            });
+            
+            const obstacleGeo = new THREE.BoxGeometry(20, 8, 20);
+            
+            // Central block
+            const centerBlock = new THREE.Mesh(obstacleGeo, obstacleMat);
+            centerBlock.position.set(0, 4, 0);
+            scene.add(centerBlock);
+            mapObjects.push(centerBlock);
+
+            // Ramps
+            const rampGeo = new THREE.BoxGeometry(20, 1, 30);
+            const rampPositions = [
+                {x: 0, z: -25, rotX: Math.PI / 8},
+                {x: 0, z: 25, rotX: -Math.PI / 8},
+                {x: -25, z: 0, rotZ: -Math.PI / 8},
+                {x: 25, z: 0, rotZ: Math.PI / 8},
+            ];
+
+            rampPositions.forEach(p => {
+                const ramp = new THREE.Mesh(rampGeo, obstacleMat);
+                ramp.position.set(p.x, 0.5, p.z);
+                if(p.rotX) ramp.rotation.x = p.rotX;
+                if(p.rotZ) ramp.rotation.z = p.rotZ;
+                scene.add(ramp);
+                mapObjects.push(ramp);
+            });
+
+            // Add glowing edges to all obstacles
+            mapObjects.forEach(obj => {
+                const edges = new THREE.EdgesGeometry(obj.geometry);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0xff4100, linewidth: 2 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                obj.add(wireframe);
+            });
+        }
+
+
+        function checkWinCondition() {
+            if (gameState !== 'PLAYING') return;
+
+            const alivePlayers = players.filter(p => p.isAlive);
+
+            if (alivePlayers.length <= 1) {
+                setTimeout(() => {
+                    if (gameState !== 'PLAYING') return;
+                    if (alivePlayers.length === 1) {
+                        gameWinner = alivePlayers[0];
+                        scores[gameWinner.id]++;
+                        endGame(`Player ${gameWinner.id + 1} Wins!`);
+                    } else {
+                        endGame("It's a Tie!");
+                        gameWinner = null;
+                    }
+                    updateScores();
+                }, 500);
+            }
+        }
+
+        function endGame(winnerMessage) {
+            gameState = 'ROUND_OVER';
+            winnerText.textContent = winnerMessage;
+            if (gameWinner) {
+                winnerText.style.color = `#${gameWinner.color.getHexString()}`;
+            } else {
+                winnerText.style.color = "#ffffff";
+            }
+            gameOverMenu.classList.remove('hidden');
+            spectateMessage.classList.add('hidden');
+        }
+
+        function updateScores() {
+            scoreElems.forEach((elem, index) => {
+                const playerExists = players.some(p => p.id === index);
+                if (playerExists) {
+                    elem.textContent = `P${index + 1}: ${scores[index]}`;
+                    elem.classList.remove('hidden');
+                } else {
+                    elem.classList.add('hidden');
+                }
+            });
+            
+            // Update score colors based on selected colors
+            updateScoreColors();
+        }
+
+        function updateScoreColors() {
+            // Convert hex to CSS color
+            const hexToCSS = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
+            
+            scoreElems[0].style.color = hexToCSS(p1ColorValue);
+            scoreElems[1].style.color = hexToCSS(p2ColorValue);
+            scoreElems[2].style.color = hexToCSS(p3ColorValue);
+            scoreElems[3].style.color = hexToCSS(p4ColorValue);
+        }
+        
+        function updateTrails() {
+            for (let i = trails.length - 1; i >= 0; i--) {
+                const trail = trails[i];
+                trail.userData.lifetime--;
+                if (trail.userData.lifetime <= 0) {
+                    scene.remove(trail);
+                    trails.splice(i, 1);
+                } else {
+                    trail.material.opacity = Math.max(0, trail.userData.lifetime / TRAIL_LIFETIME);
+                }
+            }
+        }
+
+        function onKeyDown(event) {
+            const key = event.key.toLowerCase();
+            switch(key) {
+                case 'a': keys.p1_left = true; break;
+                case 'd': keys.p1_right = true; break;
+                case 'arrowleft': keys.p2_left = true; break;
+                case 'arrowright': keys.p2_right = true; break;
+                case 'j': keys.p3_left = true; break;
+                case 'l': keys.p3_right = true; break;
+                case 'numpad4': case '4': keys.p4_left = true; break;
+                case 'numpad6': case '6': keys.p4_right = true; break;
+                case 'c': cycleSpectator(); break;
+            }
+        }
+        function onKeyUp(event) {
+            const key = event.key.toLowerCase();
+            switch(key) {
+                case 'a': keys.p1_left = false; break;
+                case 'd': keys.p1_right = false; break;
+                case 'arrowleft': keys.p2_left = false; break;
+                case 'arrowright': keys.p2_right = false; break;
+                case 'j': keys.p3_left = false; break;
+                case 'l': keys.p3_right = false; break;
+                case 'numpad4': case '4': keys.p4_left = false; break;
+                case 'numpad6': case '6': keys.p4_right = false; break;
+            }
+        }
+
+        function onMouseWheel(event) {
+            cameraDistance += event.deltaY * 0.01;
+            cameraDistance = THREE.MathUtils.clamp(cameraDistance, MIN_CAMERA_DISTANCE, MAX_CAMERA_DISTANCE);
+        }
+
+        function handlePlayerUpdates() {
+            const turnInputs = [
+                (keys.p1_left ? 1 : 0) - (keys.p1_right ? 1 : 0),
+                (keys.p2_left ? 1 : 0) - (keys.p2_right ? 1 : 0),
+                (keys.p3_left ? 1 : 0) - (keys.p3_right ? 1 : 0),
+                (keys.p4_left ? 1 : 0) - (keys.p4_right ? 1 : 0),
+            ];
+
+            players.forEach((player) => {
+                if (player.isAI) {
+                    player.updateAI(players);
+                } else {
+                    player.update(turnInputs[player.id], players);
+                }
+            });
+        }
+
+        function handleRoundOverUpdates() {
+            if (gameWinner && gameWinner.isAlive) {
+                const turnInputs = [
+                    (keys.p1_left ? 1 : 0) - (keys.p1_right ? 1 : 0),
+                    (keys.p2_left ? 1 : 0) - (keys.p2_right ? 1 : 0),
+                    (keys.p3_left ? 1 : 0) - (keys.p3_right ? 1 : 0),
+                    (keys.p4_left ? 1 : 0) - (keys.p4_right ? 1 : 0),
+                ];
+                gameWinner.update(turnInputs[gameWinner.id], players);
+            }
+        }
+
+        function updateSpectatorOnDeath(deadPlayer) {
+            const living = players.filter(p => p.isAlive);
+            if (living.length > 0 && (spectatorTarget === deadPlayer || spectatorTarget === null)) {
+                spectatorTarget = living[0];
+            } else if (living.length === 0) {
+                spectatorTarget = null;
+            }
+        }
+
+        function cycleSpectator() {
+            const humanPlayer = players.find(p => p.id === 0);
+            if (humanPlayer && humanPlayer.isAlive) return;
+
+            const living = players.filter(p => p.isAlive);
+            if (living.length < 2) return;
+
+            const currentIndex = living.indexOf(spectatorTarget);
+            const nextIndex = (currentIndex + 1) % living.length;
+            spectatorTarget = living[nextIndex];
+        }
+
+        function updateCamera() {
+            let target = null;
+            const livingPlayers = players.filter(p => p.isAlive);
+            const humanPlayer = players.find(p => p.id === 0);
+
+            if (humanPlayer && humanPlayer.isAlive) {
+                target = humanPlayer;
+            } else if (spectatorTarget && spectatorTarget.isAlive) {
+                target = spectatorTarget;
+            } else if (livingPlayers.length > 0) {
+                target = livingPlayers[0];
+                spectatorTarget = target;
+            } else if (gameWinner) {
+                target = gameWinner;
+            }
+
+            if (!target) return;
+
+            const targetPos = new THREE.Vector3();
+            target.mesh.getWorldPosition(targetPos);
+            
+            const zoomRatio = (cameraDistance - MIN_CAMERA_DISTANCE) / (MAX_CAMERA_DISTANCE - MIN_CAMERA_DISTANCE);
+
+            const thirdPersonOffset = new THREE.Vector3(0, 4, 6);
+            const topDownOffset = new THREE.Vector3(0, MAX_CAMERA_DISTANCE, 1);
+
+            const finalOffset = new THREE.Vector3().lerpVectors(thirdPersonOffset, topDownOffset, zoomRatio);
+            finalOffset.applyQuaternion(target.mesh.quaternion);
+
+            const cameraPos = targetPos.clone().add(finalOffset);
+            
+            camera.position.lerp(cameraPos, 0.1);
+            camera.lookAt(targetPos);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState === 'PLAYING') {
+                handlePlayerUpdates();
+            } else if (gameState === 'ROUND_OVER') {
+                handleRoundOverUpdates();
+            }
+            
+            updateTrails();
+            updateExplosions();
+            updateAnnouncements();
+            
+            updateCamera();
+            composer.render();
+        }
+
+        init();
+    </script>
+</body>
+</html>
