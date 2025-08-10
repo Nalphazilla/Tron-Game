@@ -216,128 +216,119 @@
             <!-- Color Selection -->
             <div>
                 <label class="block text-cyan-300 mb-2">PLAYER COLORS</label>
-                <div class="space-y-2 mb-4">
-                    <div id="p1ColorContainer" class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P1:</span>
-                        <div class="color-dropdown">
-                            <button class="color-dropdown-button" onclick="toggleColorDropdown('p1')">
-                                <div class="color-preview" id="p1ColorPreview" style="background-color: #00ffff;"></div>
-                            </button>
-                            <div class="color-dropdown-content" id="p1ColorDropdown">
-                                <div class="color-option" onclick="selectColor('p1', '0x00ffff', '#00ffff', 'Cyan')">
-                                    <div class="color-preview" style="background-color: #00ffff;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0xff69b4', '#ff69b4', 'Pink')">
-                                    <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0x800080', '#800080', 'Purple')">
-                                    <div class="color-preview" style="background-color: #800080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0xffff00', '#ffff00', 'Yellow')">
-                                    <div class="color-preview" style="background-color: #ffff00;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0xffffff', '#ffffff', 'White')">
-                                    <div class="color-preview" style="background-color: #ffffff;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0x008080', '#008080', 'Teal')">
-                                    <div class="color-preview" style="background-color: #008080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p1', '0xc0c0c0', '#c0c0c0', 'Silver')">
-                                    <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                </div>
+                <div class="space-y-3 mb-4">
+                    <div id="p1ColorContainer" class="flex flex-col space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-cyan-200">P1:</span>
+                            <div class="color-preview" id="p1ColorPreview" style="background-color: #00ffff;"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 ml-8">
+                            <div class="color-option" onclick="selectColor('p1', '0x00ffff', '#00ffff', 'Cyan')">
+                                <div class="color-preview" style="background-color: #00ffff;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0xff69b4', '#ff69b4', 'Pink')">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0x800080', '#800080', 'Purple')">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0xffff00', '#ffff00', 'Yellow')">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0xffffff', '#ffffff', 'White')">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0x008080', '#008080', 'Teal')">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0xc0c0c0', '#c0c0c0', 'Silver')">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
                             </div>
                         </div>
                     </div>
-                    <div id="p2ColorContainer" class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P2:</span>
-                        <div class="color-dropdown">
-                            <button class="color-dropdown-button" onclick="toggleColorDropdown('p2')">
-                                <div class="color-preview" id="p2ColorPreview" style="background-color: #ff4100;"></div>
-                            </button>
-                            <div class="color-dropdown-content" id="p2ColorDropdown">
-                                <div class="color-option" onclick="selectColor('p2', '0xff4100', '#ff4100', 'Orange')">
-                                    <div class="color-preview" style="background-color: #ff4100;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0xff69b4', '#ff69b4', 'Pink')">
-                                    <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0x800080', '#800080', 'Purple')">
-                                    <div class="color-preview" style="background-color: #800080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0xffff00', '#ffff00', 'Yellow')">
-                                    <div class="color-preview" style="background-color: #ffff00;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0xffffff', '#ffffff', 'White')">
-                                    <div class="color-preview" style="background-color: #ffffff;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0x008080', '#008080', 'Teal')">
-                                    <div class="color-preview" style="background-color: #008080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p2', '0xc0c0c0', '#c0c0c0', 'Silver')">
-                                    <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                </div>
+                    <div id="p2ColorContainer" class="flex flex-col space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-cyan-200">P2:</span>
+                            <div class="color-preview" id="p2ColorPreview" style="background-color: #ff4100;"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 ml-8">
+                            <div class="color-option" onclick="selectColor('p2', '0xff4100', '#ff4100', 'Orange')">
+                                <div class="color-preview" style="background-color: #ff4100;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p2', '0xff69b4', '#ff69b4', 'Pink')">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p2', '0x800080', '#800080', 'Purple')">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p1', '0xffff00', '#ffff00', 'Yellow')">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p2', '0xffffff', '#ffffff', 'White')">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p2', '0x008080', '#008080', 'Teal')">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p2', '0xc0c0c0', '#c0c0c0', 'Silver')">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
                             </div>
                         </div>
                     </div>
-                    <div id="p3ColorContainer" class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P3:</span>
-                        <div class="color-dropdown">
-                            <button class="color-dropdown-button" onclick="toggleColorDropdown('p3')">
-                                <div class="color-preview" id="p3ColorPreview" style="background-color: #ff0000;"></div>
-                            </button>
-                            <div class="color-dropdown-content" id="p3ColorDropdown">
-                                <div class="color-option" onclick="selectColor('p3', '0xff0000', '#ff0000', 'Red')">
-                                    <div class="color-preview" style="background-color: #ff0000;"></div>
+                    <div id="p3ColorContainer" class="flex flex-col space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-cyan-200">P3:</span>
+                            <div class="color-preview" id="p3ColorPreview" style="background-color: #ff0000;"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 ml-8">
+                            <div class="color-option" onclick="selectColor('p3', '0xff0000', '#ff0000', 'Red')">
+                                <div class="color-preview" style="background-color: #ff0000;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p3', '0xff69b4', '#ff69b4', 'Pink')">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p3', '0x800080', '#800080', 'Purple')">
+                                <div class="color-preview" style="background-color: #800080;"></div>
                                 </div>
-                                <div class="color-option" onclick="selectColor('p3', '0xff69b4', '#ff69b4', 'Pink')">
-                                    <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p3', '0x800080', '#800080', 'Purple')">
-                                    <div class="color-preview" style="background-color: #800080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p3', '0xffff00', '#ffff00', 'Yellow')">
-                                    <div class="color-preview" style="background-color: #ffff00;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p3', '0xffffff', '#ffffff', 'White')">
-                                    <div class="color-preview" style="background-color: #ffffff;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p3', '0x008080', '#008080', 'Teal')">
-                                    <div class="color-preview" style="background-color: #008080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p3', '0xc0c0c0', '#c0c0c0', 'Silver')">
-                                    <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                </div>
+                            <div class="color-option" onclick="selectColor('p3', '0xffff00', '#ffff00', 'Yellow')">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p3', '0xffffff', '#ffffff', 'White')">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p3', '0x008080', '#008080', 'Teal')">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p3', '0xc0c0c0', '#c0c0c0', 'Silver')">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
                             </div>
                         </div>
                     </div>
-                    <div id="p4ColorContainer" class="flex items-center space-x-2">
-                        <span class="text-xs text-cyan-200">P4:</span>
-                        <div class="color-dropdown">
-                            <button class="color-dropdown-button" onclick="toggleColorDropdown('p4')">
-                                <div class="color-preview" id="p4ColorPreview" style="background-color: #00ff80;"></div>
-                            </button>
-                            <div class="color-dropdown-content" id="p4ColorDropdown">
-                                <div class="color-option" onclick="selectColor('p4', '0x00ff80', '#00ff80', 'Green')">
-                                    <div class="color-preview" style="background-color: #00ff80;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0xff69b4', '#ff69b4', 'Pink')">
-                                    <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0x800080', '#800080', 'Purple')">
-                                    <div class="color-preview" style="background-color: #800080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0xffff00', '#ffff00', 'Yellow')">
-                                    <div class="color-preview" style="background-color: #ffff00;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0xffffff', '#ffffff', 'White')">
-                                    <div class="color-preview" style="background-color: #ffffff;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0x008080', '#008080', 'Teal')">
-                                    <div class="color-preview" style="background-color: #008080;"></div>
-                                </div>
-                                <div class="color-option" onclick="selectColor('p4', '0xc0c0c0', '#c0c0c0', 'Silver')">
-                                    <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                </div>
+                    <div id="p4ColorContainer" class="flex flex-col space-y-2">
+                        <div class="text-xs text-cyan-200">P4:</span>
+                            <div class="color-preview" id="p4ColorPreview" style="background-color: #00ff80;"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 ml-8">
+                            <div class="color-option" onclick="selectColor('p4', '0x00ff80', '#00ff80', 'Green')">
+                                <div class="color-preview" style="background-color: #00ff80;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0xff69b4', '#ff69b4', 'Pink')">
+                                <div class="color-preview" style="background-color: #ff69b4;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0x800080', '#800080', 'Purple')">
+                                <div class="color-preview" style="background-color: #800080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0xffff00', '#ffff00', 'Yellow')">
+                                <div class="color-preview" style="background-color: #ffff00;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0xffffff', '#ffffff', 'White')">
+                                <div class="color-preview" style="background-color: #ffffff;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0x008080', '#008080', 'Teal')">
+                                <div class="color-preview" style="background-color: #008080;"></div>
+                            </div>
+                            <div class="color-option" onclick="selectColor('p4', '0xc0c0c0', '#c0c0c0', 'Silver')">
+                                <div class="color-preview" style="background-color: #c0c0c0;"></div>
                             </div>
                         </div>
                     </div>
