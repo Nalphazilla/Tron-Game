@@ -64,6 +64,32 @@
             font-size: 1.5rem;
             text-shadow: 0 0 10px currentColor;
         }
+        
+        .start-invuln-countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 20px;
+            padding: 20px 40px;
+            text-align: center;
+            box-shadow: 0 0 30px #00ff00;
+        }
+        
+        .start-invuln-countdown #countdownText {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .start-invuln-countdown #countdownText.changing {
+            transform: scale(1.3);
+        }
         .player1-score { color: #00ffff; }
         .player2-score { color: #ff4100; }
         .player3-score { color: #ff0000; }
@@ -152,6 +178,42 @@
             box-shadow: 0 0 20px #ffff00;
             transform: scale(1.05);
         }
+
+        /* Debug screen specific styles */
+        #debugScreen {
+            width: 400px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+        
+        #debugScreen .space-y-2 {
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #001a1a;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-track {
+            background: #001a1a;
+            border-radius: 4px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
+        }
+        
+        /* Invulnerability pulse animation */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body>
@@ -168,6 +230,10 @@
                 <p><strong style="color: #00ff80;">P4:</strong> 4/6 Numpad</p>
             </div>
             <p class="text-xs text-cyan-200 mb-4">Press 'C' to cycle spectators when eliminated.</p>
+            <p class="text-xs text-cyan-200 mb-4">Press 'I' to toggle debug screen.</p>
+            <p class="text-xs text-cyan-200 mb-4">Press 'V' to activate invulnerability (5s).</p>
+            <p class="text-xs text-green-400 mb-4">All players start with 3s invulnerability.</p>
+            <p class="text-xs text-yellow-400 mb-4">Press 'T' to test countdown display.</p>
             
             <!-- Map Selection -->
             <div>
@@ -259,6 +325,32 @@
         <div id="deathMessage" class="ui-element hidden text-red-500 border-red-500" style="box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000;">
             <h2 class="text-4xl font-bold">YOU DIED</h2>
         </div>
+
+        <div id="debugScreen" class="ui-element hidden">
+            <h2 class="text-2xl font-bold mb-4 text-cyan-300">DEBUG SCREEN</h2>
+            <div class="text-left text-sm space-y-2 max-h-96 overflow-y-auto">
+                <div><strong>Game State:</strong> <span id="debugGameState">-</span></div>
+                <div><strong>Game Mode:</strong> <span id="debugGameMode">-</span></div>
+                <div><strong>Current Map:</strong> <span id="debugCurrentMap">-</span></div>
+                <div><strong>Camera Distance:</strong> <span id="debugCameraDistance">-</span></div>
+                <div><strong>Active Players:</strong> <span id="debugActivePlayers">-</span></div>
+                <div><strong>Total Trails:</strong> <span id="debugTotalTrails">-</span></div>
+                <div><strong>FPS:</strong> <span id="debugFPS">-</span></div>
+                <div><strong>Window Size:</strong> <span id="debugWindowSize">-</span></div>
+                <div><strong>Renderer Info:</strong> <span id="debugRendererInfo">-</span></div>
+                <div class="border-t border-cyan-500 pt-2 mt-2">
+                    <strong>Player Details:</strong>
+                    <div id="debugPlayerDetails" class="ml-2 space-y-1"></div>
+                </div>
+                <div class="border-t border-cyan-500 pt-2 mt-2">
+                    <strong>Invulnerability:</strong>
+                    <div id="debugInvulnerability" class="ml-2 space-y-1"></div>
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-cyan-200">
+                Press 'I' again to hide
+            </div>
+        </div>
     </div>
     
     <div id="spectateMessage" class="hidden" style="position: absolute; bottom: 20px; width: 100%; text-align: center; pointer-events: none;">
@@ -274,6 +366,9 @@
         <div id="player2Score" class="player2-score hidden">P2: 0</div>
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
+        <div id="startInvulnCountdown" class="start-invuln-countdown hidden">
+            <span id="countdownText">3</span>
+        </div>
     </div>
 
     <!-- Three.js and Post-processing scripts -->
@@ -347,6 +442,33 @@
             document.getElementById('player3Score'),
             document.getElementById('player4Score'),
         ];
+
+        // Debug screen elements
+        const debugScreen = document.getElementById('debugScreen');
+        const debugGameState = document.getElementById('debugGameState');
+        const debugGameMode = document.getElementById('debugGameMode');
+        const debugCurrentMap = document.getElementById('debugCurrentMap');
+        const debugCameraDistance = document.getElementById('debugCameraDistance');
+        const debugActivePlayers = document.getElementById('debugActivePlayers');
+        const debugTotalTrails = document.getElementById('debugTotalTrails');
+        const debugFPS = document.getElementById('debugFPS');
+        const debugWindowSize = document.getElementById('debugWindowSize');
+        const debugRendererInfo = document.getElementById('debugRendererInfo');
+        const debugPlayerDetails = document.getElementById('debugPlayerDetails');
+        const debugInvulnerability = document.getElementById('debugInvulnerability');
+        
+        // Start invulnerability countdown elements
+        const startInvulnCountdown = document.getElementById('startInvulnCountdown');
+        const countdownText = document.getElementById('countdownText');
+        
+        // Debug: Check if countdown elements exist
+        console.log('Countdown elements:', { startInvulnCountdown, countdownText });
+        
+        // Debug variables
+        let debugVisible = false;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 0;
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -602,6 +724,12 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
+                // Invulnerability properties
+                this.isInvulnerable = false;
+                this.invulnerabilityTimer = 0;
+                this.invulnerabilityDuration = 300; // 5 seconds at 60fps
+                this.startInvulnerabilityDuration = 180; // 3 seconds at 60fps
+                
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
@@ -612,14 +740,68 @@
 
             reset() {
                 this.isAlive = true;
+                this.isInvulnerable = false;
+                this.invulnerabilityTimer = 0;
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
+                
+                // Automatically activate start invulnerability for 3 seconds
+                this.activateStartInvulnerability();
+            }
+
+            activateInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = this.invulnerabilityDuration;
+                console.log(`Player ${this.id + 1} invulnerability activated - ${this.invulnerabilityDuration / 60} seconds`);
+            }
+
+            activateStartInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = this.startInvulnerabilityDuration;
+                console.log(`Player ${this.id + 1} start invulnerability activated - ${this.startInvulnerabilityDuration / 60} seconds`);
+            }
+
+            updateInvulnerability() {
+                if (this.isInvulnerable && this.invulnerabilityTimer > 0) {
+                    // Check if this is start invulnerability before decrementing
+                    const isStartInvuln = this.invulnerabilityTimer <= this.startInvulnerabilityDuration;
+                    
+                    this.invulnerabilityTimer--;
+                    
+                    // Add pulsing effect when invulnerable
+                    if (this.visuals) {
+                        const pulseIntensity = 0.5 + 0.5 * Math.sin(this.invulnerabilityTimer * 0.2);
+                        this.visuals.children.forEach(child => {
+                            if (child.material && child.material.emissiveIntensity !== undefined) {
+                                child.material.emissiveIntensity = pulseIntensity;
+                            }
+                        });
+                    }
+                    
+                    if (this.invulnerabilityTimer <= 0) {
+                        this.isInvulnerable = false;
+                        const invulnType = isStartInvuln ? 'start' : 'manual';
+                        console.log(`Player ${this.id + 1} ${invulnType} invulnerability expired`);
+                        
+                        // Reset visual effects
+                        if (this.visuals) {
+                            this.visuals.children.forEach(child => {
+                                if (child.material && child.material.emissiveIntensity !== undefined) {
+                                    child.material.emissiveIntensity = 1.0;
+                                }
+                            });
+                        }
+                    }
+                }
             }
 
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
+                
+                // Update invulnerability state
+                this.updateInvulnerability();
                 
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
 
@@ -708,6 +890,11 @@
             }
 
             createTrail() {
+                // Don't create trails when invulnerable
+                if (this.isInvulnerable) {
+                    return;
+                }
+                
                 // Custom brightness for each color
                 let intensity = 2.0; // Default
                 const colorHex = this.color.getHex();
@@ -746,6 +933,11 @@
             }
 
             checkCollisions(allPlayers) {
+                // Skip collision detection when invulnerable
+                if (this.isInvulnerable) {
+                    return;
+                }
+                
                 for (const opponent of allPlayers) {
                     if (opponent.id !== this.id && opponent.isAlive) {
                         if (this.mesh.position.distanceTo(opponent.mesh.position) < 2.5) {
@@ -935,6 +1127,7 @@
             startMenu.classList.add('hidden');
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
+            startInvulnCountdown.classList.add('hidden');
             loadMap(currentMap);
             resetGame(false);
         }
@@ -967,6 +1160,7 @@
             gameState = 'MENU';
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.add('hidden');
+            startInvulnCountdown.classList.add('hidden');
             startMenu.classList.remove('hidden');
         }
 
@@ -1009,6 +1203,7 @@
 
             players.forEach(p => p.reset());
             updateScores();
+            updateScoreDisplay();
             
             gameState = 'PLAYING';
             gameOverMenu.classList.add('hidden');
@@ -1138,6 +1333,63 @@
             scoreElems[2].style.color = hexToCSS(p3ColorValue);
             scoreElems[3].style.color = hexToCSS(p4ColorValue);
         }
+
+        function updateScoreDisplay() {
+            // Update score colors
+            updateScoreColors();
+            
+            // Update invulnerability indicators
+            players.forEach((player, index) => {
+                if (scoreElems[index]) {
+                    const scoreText = scoreElems[index].textContent;
+                    if (player.isInvulnerable) {
+                        // Determine if it's start invulnerability or manual
+                        const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                        const icon = isStartInvuln ? '🟢' : '🛡️';
+                        const glowColor = isStartInvuln ? '#00ff00' : '#ffff00';
+                        
+                        scoreElems[index].textContent = scoreText.replace(/[🛡️🟢]?$/, '') + ' ' + icon;
+                        scoreElems[index].style.textShadow = `0 0 20px ${glowColor}, 0 0 30px ${glowColor}`;
+                        scoreElems[index].style.animation = 'pulse 0.5s ease-in-out infinite alternate';
+                    } else {
+                        scoreElems[index].textContent = scoreText.replace(/[🛡️🟢]?$/, '');
+                        scoreElems[index].style.textShadow = '0 0 10px currentColor';
+                        scoreElems[index].style.animation = 'none';
+                    }
+                }
+            });
+            
+            // Update start invulnerability countdown
+            updateStartInvulnCountdown();
+        }
+        
+        function updateStartInvulnCountdown() {
+            // Check if any player has start invulnerability
+            const playersWithStartInvuln = players.filter(p => 
+                p.isInvulnerable && p.invulnerabilityTimer <= p.startInvulnerabilityDuration
+            );
+            
+            if (playersWithStartInvuln.length > 0) {
+                // Show countdown for the first player with start invulnerability
+                const player = playersWithStartInvuln[0];
+                const timeLeft = Math.ceil(player.invulnerabilityTimer / 60);
+                
+                if (timeLeft > 0) {
+                    // Add scale animation when number changes
+                    if (countdownText.textContent !== timeLeft.toString()) {
+                        countdownText.classList.add('changing');
+                        setTimeout(() => countdownText.classList.remove('changing'), 100);
+                    }
+                    
+                    countdownText.textContent = timeLeft;
+                    startInvulnCountdown.classList.remove('hidden');
+                } else {
+                    startInvulnCountdown.classList.add('hidden');
+                }
+            } else {
+                startInvulnCountdown.classList.add('hidden');
+            }
+        }
         
         function updateTrails() {
             for (let i = trails.length - 1; i >= 0; i--) {
@@ -1164,6 +1416,9 @@
                 case 'numpad4': case '4': keys.p4_left = true; break;
                 case 'numpad6': case '6': keys.p4_right = true; break;
                 case 'c': cycleSpectator(); break;
+                case 'i': toggleDebugScreen(); break;
+                case 'v': activatePlayerInvulnerability(); break;
+
             }
         }
         function onKeyUp(event) {
@@ -1277,8 +1532,95 @@
             composer.setSize(window.innerWidth, window.innerHeight);
         }
 
+        function toggleDebugScreen() {
+            debugVisible = !debugVisible;
+            if (debugVisible) {
+                debugScreen.classList.remove('hidden');
+                updateDebugInfo();
+            } else {
+                debugScreen.classList.add('hidden');
+            }
+        }
+
+        function updateDebugInfo() {
+            if (!debugVisible) return;
+            
+            // Update debug information
+            debugGameState.textContent = gameState;
+            debugGameMode.textContent = gameMode;
+            debugCurrentMap.textContent = currentMap;
+            debugCameraDistance.textContent = cameraDistance.toFixed(2);
+            debugActivePlayers.textContent = players.filter(p => p.isAlive).length + '/' + players.length;
+            debugTotalTrails.textContent = trails.length;
+            debugFPS.textContent = fps.toFixed(1);
+            debugWindowSize.textContent = `${window.innerWidth}x${window.innerHeight}`;
+            debugRendererInfo.textContent = `${renderer.capabilities.maxTextureSize}x${renderer.capabilities.maxAnisotropy}`;
+            
+            // Update player details
+            let playerDetailsHTML = '';
+            players.forEach((player, index) => {
+                const status = player.isAlive ? '🟢' : '🔴';
+                let invulnStatus = '';
+                if (player.isInvulnerable) {
+                    const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                    invulnStatus = isStartInvuln ? '🟢' : '🛡️';
+                }
+                const pos = player.mesh ? player.mesh.position : { x: 0, y: 0, z: 0 };
+                const vel = player.velocity ? player.velocity : { x: 0, y: 0, z: 0 };
+                const type = player.isAI ? 'AI' : 'Human';
+                
+                playerDetailsHTML += `
+                    <div class="text-xs">
+                        <strong>P${index + 1} (${type}):</strong> ${status} ${invulnStatus}
+                        Pos: (${pos.x.toFixed(1)}, ${pos.z.toFixed(1)}) 
+                        Vel: (${vel.x.toFixed(1)}, ${vel.z.toFixed(1)})
+                    </div>
+                `;
+            });
+            debugPlayerDetails.innerHTML = playerDetailsHTML;
+            
+            // Update invulnerability info
+            let invulnHTML = '';
+            players.forEach((player, index) => {
+                if (player.isInvulnerable) {
+                    const timeLeft = (player.invulnerabilityTimer / 60).toFixed(1);
+                    const isStartInvuln = player.invulnerabilityTimer <= player.startInvulnerabilityDuration;
+                    const invulnType = isStartInvuln ? 'START' : 'MANUAL';
+                    const color = isStartInvuln ? 'text-green-400' : 'text-yellow-400';
+                    invulnHTML += `<div class="text-xs ${color}">P${index + 1}: ${timeLeft}s remaining (${invulnType})</div>`;
+                }
+            });
+            if (invulnHTML === '') {
+                invulnHTML = '<div class="text-xs text-gray-400">No active invulnerability</div>';
+            }
+            debugInvulnerability.innerHTML = invulnHTML;
+        }
+
+        function activatePlayerInvulnerability() {
+            if (gameState !== 'PLAYING') return;
+            
+            const humanPlayer = players.find(p => p.id === 0 && p.isAlive);
+            if (humanPlayer) {
+                humanPlayer.activateInvulnerability();
+                console.log('Invulnerability activated for Player 1 - 5 seconds of invulnerability');
+            } else {
+                console.log('No human player found or player is not alive');
+            }
+        }
+        
+
+
         function animate() {
             requestAnimationFrame(animate);
+
+            // Calculate FPS
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastTime >= 1000) {
+                fps = frameCount * 1000 / (currentTime - lastTime);
+                frameCount = 0;
+                lastTime = currentTime;
+            }
 
             if (gameState === 'PLAYING') {
                 handlePlayerUpdates();
@@ -1292,6 +1634,16 @@
             
             updateCamera();
             composer.render();
+
+            // Update score display
+            if (gameState === 'PLAYING') {
+                updateScoreDisplay();
+            }
+            
+            // Update debug info if visible
+            if (debugVisible) {
+                updateDebugInfo();
+            }
         }
 
         init();
