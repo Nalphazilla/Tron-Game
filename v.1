@@ -534,7 +534,7 @@
                 emissive: color, 
                 emissiveIntensity: (color.getHex() === 0xff4100 || color.getHex() === 0xff0000 || 
                                     color.getHex() === 0xff69b4 || color.getHex() === 0x800080 ||
-                                    color.getHex() === 0x00ffff) ? 4.5 : 3.0, 
+                                    color.getHex() === 0x00ffff) ? 7.0 : 3.0, 
                 toneMapped: false 
             });
 
@@ -712,7 +712,7 @@
                 if (colorHex === 0xff4100 || colorHex === 0xff0000 || 
                     colorHex === 0xff69b4 || colorHex === 0x800080 ||
                     colorHex === 0x00ffff) {
-                    intensity = 2.5; // Brighter for orange, red, pink, purple, cyan
+                    intensity = 5.0; // Much brighter for orange, red, pink, purple, cyan
                 }
                 
                 const trailMaterial = new THREE.MeshStandardMaterial({
@@ -865,7 +865,7 @@
                 emissive: player.color,
                 emissiveIntensity: (player.color.getHex() === 0xff4100 || player.color.getHex() === 0xff0000 || 
                                    player.color.getHex() === 0xff69b4 || player.color.getHex() === 0x800080 ||
-                                   player.color.getHex() === 0x00ffff) ? 3.0 : 2.0,
+                                   player.color.getHex() === 0x00ffff) ? 5.0 : 2.0,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
