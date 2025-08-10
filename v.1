@@ -239,8 +239,8 @@
                         <div class="color-option" data-hex="0xffffff" data-css="#ffffff" data-name="White">
                             <div class="color-preview" style="background-color: #ffffff;"></div>
                         </div>
-                        <div class="color-option" data-hex="0x008080" data-css="#008080" data-name="Teal">
-                            <div class="color-preview" style="background-color: #008080;"></div>
+                        <div class="color-option" data-hex="0x20b2aa" data-css="#20b2aa" data-name="Teal">
+                            <div class="color-preview" style="background-color: #20b2aa;"></div>
                         </div>
 
                     </div>
@@ -532,7 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: (color.getHex() === 0x008080 || color.getHex() === 0x800080) ? 20.0 : 
+                emissiveIntensity: (color.getHex() === 0x20b2aa || color.getHex() === 0x800080) ? 20.0 : 
                                   (color.getHex() === 0xff4100 || color.getHex() === 0xff0000) ? 8.0 :
                                   (color.getHex() === 0x00ff80) ? 12.0 :
                                   (color.getHex() === 0xffff00 || color.getHex() === 0xffffff || color.getHex() === 0x0000ff) ? 2.0 : 4.0, 
@@ -711,7 +711,7 @@
                 let intensity = 2.0; // Default
                 const colorHex = this.color.getHex();
                 
-                if (colorHex === 0x008080 || colorHex === 0x800080) {
+                if (colorHex === 0x20b2aa || colorHex === 0x800080) {
                     intensity = 10.0; // Teal & Purple x5
                 } else if (colorHex === 0xff4100 || colorHex === 0xff0000) {
                     intensity = 4.0; // Orange & Red x2
