@@ -935,8 +935,8 @@
             startMenu.classList.add('hidden');
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
-            resetGame(false);
             loadMap(currentMap);
+            resetGame(false);
         }
 
         function cleanupGame() {
@@ -959,7 +959,7 @@
             spectatorTarget = null;
             deathMessage.classList.add('hidden');
             spectateMessage.classList.add('hidden');
-            cleanupMap();
+            // Don't cleanup map obstacles - they should persist between rounds
         }
 
         function backToMenu() {
@@ -1012,6 +1012,7 @@
             
             gameState = 'PLAYING';
             gameOverMenu.classList.add('hidden');
+            console.log('Game started. Players:', players.length, 'Map objects:', mapObjects.length);
         }
         
         // --- MAP FUNCTIONS ---
@@ -1051,12 +1052,13 @@
             
             const obstacleGeo = new THREE.BoxGeometry(20, 8, 20);
             
-            // Central block
+            // Central block - make it smaller and position it better
             const centerBlock = new THREE.Mesh(obstacleGeo, obstacleMat);
             centerBlock.position.set(0, 4, 0);
+            centerBlock.scale.set(0.8, 1, 0.8); // Make it smaller
             scene.add(centerBlock);
             mapObjects.push(centerBlock);
-            console.log('Added center block at position:', centerBlock.position);
+            console.log('Added center block at position:', centerBlock.position, 'with scale:', centerBlock.scale);
 
             // Ramps
             const rampGeo = new THREE.BoxGeometry(20, 1, 30);
