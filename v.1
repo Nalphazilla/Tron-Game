@@ -141,15 +141,22 @@
         .color-dropdown-content {
             display: none;
             position: absolute;
+            top: 100%;
+            left: 0;
             background-color: #001a1a;
             border: 1px solid #00ffff;
             border-radius: 0.25rem;
             min-width: 80px;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            z-index: 1000;
+            z-index: 9999;
+            margin-top: 2px;
+            /* Debug: make it obvious when visible */
+            min-height: 50px;
         }
         .color-dropdown-content.show {
-            display: block;
+            display: block !important;
+            border: 2px solid #00ffff !important;
+            background-color: #002a2a !important;
         }
         .color-option {
             padding: 0.25rem;
@@ -272,7 +279,7 @@
                             </div>
                         </div>
                     </div>
-                                        <div id="p3ColorContainer" class="flex items-center space-x-2">
+                    <div id="p3ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P3:</span>
                         <div class="color-dropdown">
                             <button class="color-dropdown-button" onclick="toggleColorDropdown('p3')">
@@ -479,7 +486,15 @@
 
         // Color dropdown functions
         function toggleColorDropdown(player) {
+            console.log('toggleColorDropdown called for:', player);
             const dropdown = document.getElementById(player + 'ColorDropdown');
+            console.log('Found dropdown:', dropdown);
+            
+            if (!dropdown) {
+                console.error('Dropdown not found for player:', player);
+                return;
+            }
+            
             const allDropdowns = document.querySelectorAll('.color-dropdown-content');
             
             // Close all other dropdowns
@@ -488,7 +503,10 @@
             });
             
             // Toggle current dropdown
+            const isVisible = dropdown.classList.contains('show');
+            console.log('Dropdown visibility before toggle:', isVisible);
             dropdown.classList.toggle('show');
+            console.log('Dropdown visibility after toggle:', dropdown.classList.contains('show'));
         }
 
         function selectColor(player, hexValue, cssColor, colorName) {
