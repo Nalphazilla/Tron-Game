@@ -141,10 +141,16 @@
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.2s ease;
+            border: 2px solid #00ffff;
         }
         .player-circle:hover {
             transform: scale(1.1);
             box-shadow: 0 0 15px currentColor;
+        }
+        .player-circle.selected {
+            border: 3px solid #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -187,19 +193,19 @@
             <div>
                 <label class="block text-cyan-300 mb-2">PLAYER COLORS</label>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div id="p1ColorContainer" class="flex flex-col items-center space-y-2">
+                    <div id="p1ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P1</span>
                         <div class="color-preview player-circle" id="p1ColorPreview" style="background-color: #00ffff;" onclick="selectPlayer('p1')"></div>
                     </div>
-                    <div id="p2ColorContainer" class="flex flex-col items-center space-y-2">
+                    <div id="p2ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P2</span>
                         <div class="color-preview player-circle" id="p2ColorPreview" style="background-color: #ff4100;" onclick="selectPlayer('p2')"></div>
                     </div>
-                    <div id="p3ColorContainer" class="flex flex-col items-center space-y-2">
+                    <div id="p3ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P3</span>
                         <div class="color-preview player-circle" id="p3ColorPreview" style="background-color: #ff0000;" onclick="selectPlayer('p3')"></div>
                     </div>
-                    <div id="p4ColorContainer" class="flex flex-col items-center space-y-2">
+                    <div id="p4ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P4</span>
                         <div class="color-preview player-circle" id="p4ColorPreview" style="background-color: #00ff80;" onclick="selectPlayer('p4')"></div>
                     </div>
@@ -388,7 +394,14 @@
         let selectedPlayer = null;
         
         function selectPlayer(player) {
+            // Remove selection from all players
+            document.querySelectorAll('.player-circle').forEach(circle => {
+                circle.classList.remove('selected');
+            });
+            
+            // Select the clicked player
             selectedPlayer = player;
+            document.getElementById(player + 'ColorPreview').classList.add('selected');
             document.getElementById('selectedPlayerText').textContent = player.toUpperCase();
             document.getElementById('colorOptions').classList.remove('hidden');
         }
@@ -404,6 +417,9 @@
             
             // Update the preview
             document.getElementById(selectedPlayer + 'ColorPreview').style.backgroundColor = cssColor;
+            
+            // Remove selection styling
+            document.getElementById(selectedPlayer + 'ColorPreview').classList.remove('selected');
             
             // Hide color options
             document.getElementById('colorOptions').classList.add('hidden');
