@@ -360,7 +360,8 @@
             scene.fog = new THREE.Fog(scene.background, gameSize * 0.5, gameSize * 1.5);
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 
-            scene.add(new THREE.AmbientLight(0x404040, 2));
+            scene.add(new THREE.AmbientLight(0x404040, 3));
+            scene.add(new THREE.DirectionalLight(0xffffff, 1.5));
             createEnvironment();
             
             const renderScene = new RenderPass(scene, camera);
@@ -1037,9 +1038,11 @@
 
         function createArenaObstacles() {
             const obstacleMat = new THREE.MeshStandardMaterial({
-                color: 0x112244,
-                metalness: 0.9,
-                roughness: 0.2,
+                color: 0x444466,
+                metalness: 0.3,
+                roughness: 0.7,
+                emissive: 0x222244,
+                emissiveIntensity: 0.3,
             });
             
             const obstacleGeo = new THREE.BoxGeometry(20, 8, 20);
