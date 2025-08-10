@@ -709,10 +709,12 @@
                 // Increase glow for warmer colors and cyan
                 let intensity = 1.5; // Default for green, yellow, etc.
                 const colorHex = this.color.getHex();
+                console.log('Trail color hex:', colorHex.toString(16), 'for player', this.id);
                 if (colorHex === 0xff4100 || colorHex === 0xff0000 || 
                     colorHex === 0xff69b4 || colorHex === 0x800080 ||
                     colorHex === 0x00ffff) {
                     intensity = 5.0; // Much brighter for orange, red, pink, purple, cyan
+                    console.log('Setting bright intensity for color:', colorHex.toString(16));
                 }
                 
                 const trailMaterial = new THREE.MeshStandardMaterial({
