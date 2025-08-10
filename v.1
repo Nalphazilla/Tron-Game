@@ -642,6 +642,22 @@
                         // Reset visual appearance
                         this.visuals.material.emissiveIntensity = 1.0;
                         console.log(`Player ${this.id + 1} invulnerability ended at position:`, this.mesh.position);
+                        
+                        // Check if player is inside an obstacle when invulnerability ends
+                        const collisionBox = this.mesh.getObjectByName("collisionBox");
+                        if (collisionBox) {
+                            const playerBox = new THREE.Box3().setFromObject(collisionBox);
+                            const deadlyObstacles = mapObjects.filter(obj => !obj.userData.isRamp);
+                            for (const obstacle of deadlyObstacles) {
+                                const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+                                if (playerBox.intersectsBox(obstacleBox)) {
+                                    console.log(`Player ${this.id + 1} is inside obstacle at invulnerability end! Moving to safe position.`);
+                                    // Move player to a safe position
+                                    this.mesh.position.copy(this.startPosition);
+                                    break;
+                                }
+                            }
+                        }
                     } else {
                         // Flash effect during invulnerability
                         const flashIntensity = 2.0 + Math.sin(this.invulnerabilityTimer * 0.3) * 1.0;
@@ -659,6 +675,15 @@
 
                 // Simple movement - just like before
                 this.mesh.translateZ(-this.speed);
+                
+                // During invulnerability, make sure we don't go too far from spawn
+                if (this.invulnerable) {
+                    const distanceFromSpawn = this.mesh.position.distanceTo(this.startPosition);
+                    if (distanceFromSpawn > 30) {
+                        // Move back to spawn if we went too far
+                        this.mesh.position.copy(this.startPosition);
+                    }
+                }
                 
                 this.checkCollisions(opponents);
             }
@@ -796,6 +821,11 @@
                 if (collisionBox) {
                     const playerBox = new THREE.Box3().setFromObject(collisionBox);
                     const collisionObstacles = [...trails, ...mapObjects.filter(obj => !obj.userData.isRamp)];
+                    
+                    // Debug: log collision check
+                    if (this.id === 0 && mapObjects.length > 0) {
+                        console.log(`Player ${this.id + 1} collision check - Player box:`, playerBox, 'Map objects:', mapObjects.length);
+                    }
 
                     for (const obstacle of collisionObstacles) {
                          if (obstacle.userData.owner === this && obstacle.userData.lifetime > TRAIL_LIFETIME - 15) {
@@ -1030,7 +1060,7 @@
             }
 
             const startY = 0.3;
-            const offset = gameSize / 2.5; // Increased from /3 to /2.5 for safer spawning 
+            const offset = gameSize / 2.2; // Increased from /2.5 to /2.2 for even safer spawning 
             
             let activePlayerConfigs = [];
             
@@ -1066,6 +1096,8 @@
             gameState = 'PLAYING';
             gameOverMenu.classList.add('hidden');
             console.log('Game started. Players:', players.length, 'Map objects:', mapObjects.length);
+            console.log('Player spawn positions:', players.map(p => ({id: p.id, pos: p.mesh.position})));
+            console.log('Map objects positions:', mapObjects.map(obj => ({pos: obj.position, isRamp: obj.userData.isRamp})));
         }
         
         // --- MAP FUNCTIONS ---
@@ -1096,11 +1128,11 @@
         function createArenaObstacles() {
             console.log('Creating arena obstacles...');
             const obstacleMat = new THREE.MeshStandardMaterial({
-                color: 0x444466,
+                color: 0x666688,
                 metalness: 0.3,
                 roughness: 0.7,
-                emissive: 0x222244,
-                emissiveIntensity: 0.3,
+                emissive: 0x444466,
+                emissiveIntensity: 0.8,
             });
             
             const obstacleGeo = new THREE.BoxGeometry(20, 8, 20);
@@ -1108,10 +1140,20 @@
             // Central block - make it smaller and position it better
             const centerBlock = new THREE.Mesh(obstacleGeo, obstacleMat);
             centerBlock.position.set(0, 4, 0);
-            centerBlock.scale.set(0.8, 1, 0.8); // Make it smaller
+            centerBlock.scale.set(0.6, 1, 0.6); // Make it even smaller
             scene.add(centerBlock);
             mapObjects.push(centerBlock);
             console.log('Added center block at position:', centerBlock.position, 'with scale:', centerBlock.scale);
+            console.log('Center block bounds:', new THREE.Box3().setFromObject(centerBlock));
+            
+            // Add a bright outline to make it very visible
+            const outlineGeometry = new THREE.EdgesGeometry(centerBlock.geometry);
+            const outlineMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
+            const outline = new THREE.LineSegments(outlineGeometry, outlineMaterial);
+            outline.position.copy(centerBlock.position);
+            outline.scale.copy(centerBlock.scale);
+            scene.add(outline);
+            mapObjects.push(outline);
 
             // Ramps - make them driveable, not deadly
             const rampGeo = new THREE.BoxGeometry(20, 1, 30);
@@ -1130,6 +1172,16 @@
                 ramp.userData.isRamp = true; // Mark as non-deadly
                 scene.add(ramp);
                 mapObjects.push(ramp);
+                
+                // Add outline to ramp
+                const rampOutline = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(ramp.geometry),
+                    new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 1 })
+                );
+                rampOutline.position.copy(ramp.position);
+                rampOutline.rotation.copy(ramp.rotation);
+                scene.add(rampOutline);
+                mapObjects.push(rampOutline);
             });
 
             // Add glowing edges to all obstacles
@@ -1330,6 +1382,11 @@
             
             camera.position.lerp(cameraPos, 0.1);
             camera.lookAt(targetPos);
+            
+            // Debug: log camera position occasionally
+            if (target.id === 0 && Math.random() < 0.01) {
+                console.log('Camera update - Target pos:', targetPos, 'Camera pos:', camera.position);
+            }
         }
         
         function onWindowResize() {
