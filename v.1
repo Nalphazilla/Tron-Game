@@ -935,8 +935,8 @@
             startMenu.classList.add('hidden');
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
-            loadMap(currentMap);
             resetGame(false);
+            loadMap(currentMap);
         }
 
         function cleanupGame() {
@@ -1030,13 +1030,17 @@
         }
 
         function loadMap(mapName) {
+            console.log('Loading map:', mapName);
             cleanupMap();
             if (mapName === 'The Arena') {
+                console.log('Creating arena obstacles...');
                 createArenaObstacles();
+                console.log('Arena obstacles created. Total map objects:', mapObjects.length);
             }
         }
 
         function createArenaObstacles() {
+            console.log('Creating arena obstacles...');
             const obstacleMat = new THREE.MeshStandardMaterial({
                 color: 0x444466,
                 metalness: 0.3,
@@ -1052,6 +1056,7 @@
             centerBlock.position.set(0, 4, 0);
             scene.add(centerBlock);
             mapObjects.push(centerBlock);
+            console.log('Added center block at position:', centerBlock.position);
 
             // Ramps
             const rampGeo = new THREE.BoxGeometry(20, 1, 30);
