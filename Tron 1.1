@@ -656,40 +656,9 @@
             }
             
             createLightWall() {
-                // Remove existing light wall if any
-                if (this.lightWall) {
-                    scene.remove(this.lightWall);
-                }
-                
-                // Create a cylindrical light wall around the player
-                const wallGeometry = new THREE.CylinderGeometry(3, 3, 2, 16);
-                const wallMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color,
-                    emissive: this.color,
-                    emissiveIntensity: 0.8,
-                    transparent: true,
-                    opacity: 0.6,
-                    side: THREE.DoubleSide,
-                    toneMapped: false
-                });
-                
-                this.lightWall = new THREE.Mesh(wallGeometry, wallMaterial);
-                this.lightWall.position.copy(this.mesh.position);
-                this.lightWall.position.y = 1;
-                this.lightWall.userData.owner = this;
-                
-                scene.add(this.lightWall);
-            }
-            
-            updateLightWall() {
-                if (this.lightWall && this.isInvulnerable) {
-                    this.lightWall.position.copy(this.mesh.position);
-                    this.lightWall.position.y = 1;
-                    
-                    // Pulsing effect
-                    const time = Date.now() * 0.005;
-                    this.lightWall.material.emissiveIntensity = 0.8 + Math.sin(time) * 0.4;
-                }
+                // Create an invisible collision shield instead of visible wall
+                // This prevents the player from dying but doesn't show a visual wall
+                this.lightWall = null; // No visual wall needed
             }
             
             checkInvulnerability() {
@@ -697,15 +666,7 @@
                     const currentTime = Date.now();
                     if (currentTime - this.invulnerabilityTimer >= this.invulnerabilityDuration) {
                         this.isInvulnerable = false;
-                        this.removeLightWall();
                     }
-                }
-            }
-            
-            removeLightWall() {
-                if (this.lightWall) {
-                    scene.remove(this.lightWall);
-                    this.lightWall = null;
                 }
             }
 
@@ -725,9 +686,6 @@
                 
                 this.createTrail();
                 this.checkCollisions(opponents);
-                
-                // Update light wall position and effects
-                this.updateLightWall();
             }
             
             updateAI(opponents) {
@@ -879,7 +837,8 @@
                     const collisionObstacles = [...trails, ...mapObjects];
 
                     for (const obstacle of collisionObstacles) {
-                         if (obstacle.userData.owner === this && obstacle.userData.lifetime > TRAIL_LIFETIME - 15) {
+                        // Skip collision with player's own trail (even when invulnerable)
+                        if (obstacle.userData.owner === this) {
                             continue; 
                         }
 
@@ -935,9 +894,6 @@
             die() {
                 if (!this.isAlive) return;
                 this.isAlive = false;
-                
-                // Remove light wall when player dies
-                this.removeLightWall();
                 
                 if (this.id === 0) { // Only show popups for the human player
                     deathMessage.classList.remove('hidden');
@@ -1227,11 +1183,8 @@
             });
             announcements = [];
             
-            // Clean up players and their light walls
+            // Clean up players
             players.forEach(p => {
-                if (p.lightWall) {
-                    p.removeLightWall();
-                }
                 scene.remove(p.mesh);
             });
             players = [];
