@@ -70,14 +70,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 9999;
-            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.8);
             border: 2px solid #00ff00;
             border-radius: 20px;
             padding: 20px 40px;
             text-align: center;
             box-shadow: 0 0 30px #00ff00;
-            pointer-events: none;
         }
         
         .start-invuln-countdown #countdownText {
@@ -367,7 +366,7 @@
         <div id="player2Score" class="player2-score hidden">P2: 0</div>
         <div id="player3Score" class="player3-score hidden">P3: 0</div>
         <div id="player4Score" class="player4-score hidden">P4: 0</div>
-        <div id="startInvulnCountdown" class="start-invuln-countdown hidden" style="display: none;">
+        <div id="startInvulnCountdown" class="start-invuln-countdown hidden">
             <span id="countdownText">3</span>
         </div>
     </div>
@@ -1129,7 +1128,6 @@
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.remove('hidden');
             startInvulnCountdown.classList.add('hidden');
-            startInvulnCountdown.style.display = 'none';
             loadMap(currentMap);
             resetGame(false);
         }
@@ -1163,7 +1161,6 @@
             gameOverMenu.classList.add('hidden');
             scoreContainer.classList.add('hidden');
             startInvulnCountdown.classList.add('hidden');
-            startInvulnCountdown.style.display = 'none';
             startMenu.classList.remove('hidden');
         }
 
@@ -1363,18 +1360,10 @@
             });
             
             // Update start invulnerability countdown
-            // Temporarily disabled to debug display issues
-            // updateStartInvulnCountdown();
+            updateStartInvulnCountdown();
         }
         
         function updateStartInvulnCountdown() {
-            // Only show countdown during actual gameplay
-            if (gameState !== 'PLAYING') {
-                startInvulnCountdown.classList.add('hidden');
-                startInvulnCountdown.style.display = 'none';
-                return;
-            }
-            
             // Check if any player has start invulnerability
             const playersWithStartInvuln = players.filter(p => 
                 p.isInvulnerable && p.invulnerabilityTimer <= p.startInvulnerabilityDuration
@@ -1389,21 +1378,16 @@
                     // Add scale animation when number changes
                     if (countdownText.textContent !== timeLeft.toString()) {
                         countdownText.classList.add('changing');
-                        setTimeout(() => countdownText.classList.remove('changing'), 10);
+                        setTimeout(() => countdownText.classList.remove('changing'), 100);
                     }
                     
                     countdownText.textContent = timeLeft;
                     startInvulnCountdown.classList.remove('hidden');
-                    startInvulnCountdown.style.display = 'block';
-                    console.log(`Showing countdown: ${timeLeft}s remaining`);
                 } else {
                     startInvulnCountdown.classList.add('hidden');
-                    startInvulnCountdown.style.display = 'none';
-                    console.log('Hiding countdown - time expired');
                 }
             } else {
                 startInvulnCountdown.classList.add('hidden');
-                startInvulnCountdown.style.display = 'none';
             }
         }
         
@@ -1434,7 +1418,7 @@
                 case 'c': cycleSpectator(); break;
                 case 'i': toggleDebugScreen(); break;
                 case 'v': activatePlayerInvulnerability(); break;
-                case 't': testCountdown(); break;
+
             }
         }
         function onKeyUp(event) {
@@ -1624,24 +1608,7 @@
             }
         }
         
-        function testCountdown() {
-            console.log('Testing countdown display...');
-            if (startInvulnCountdown && countdownText) {
-                countdownText.textContent = '3';
-                startInvulnCountdown.classList.remove('hidden');
-                startInvulnCountdown.style.display = 'block';
-                console.log('Countdown should be visible now');
-                
-                // Hide after 2 seconds
-                setTimeout(() => {
-                    startInvulnCountdown.classList.add('hidden');
-                    startInvulnCountdown.style.display = 'none';
-                    console.log('Countdown hidden');
-                }, 2000);
-            } else {
-                console.log('Countdown elements not found!');
-            }
-        }
+
 
         function animate() {
             requestAnimationFrame(animate);
