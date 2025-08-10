@@ -532,7 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: 7.0, 
+                emissiveIntensity: 4.0, 
                 toneMapped: false 
             });
 
@@ -704,9 +704,9 @@
             }
 
             createTrail() {
-                // Make all colors equally bright for now
+                // Set moderate brightness for all colors
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: 5.0,
+                    color: this.color, emissive: this.color, emissiveIntensity: 2.0,
                     transparent: true, opacity: 1.0, side: THREE.DoubleSide,
                     toneMapped: false
                 });
