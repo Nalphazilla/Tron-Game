@@ -532,9 +532,8 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: (color.getHex() === 0xff4100 || color.getHex() === 0xff0000 || 
-                                    color.getHex() === 0xff69b4 || color.getHex() === 0x800080 ||
-                                    color.getHex() === 0x00ffff) ? 7.0 : 3.0, 
+                emissiveIntensity: (color.getHex() === 0x00ff80 || color.getHex() === 0xffff00 || 
+                                    color.getHex() === 0xffffff || color.getHex() === 0x008080) ? 3.0 : 7.0, 
                 toneMapped: false 
             });
 
@@ -706,15 +705,12 @@
             }
 
             createTrail() {
-                // Increase glow for warmer colors and cyan
-                let intensity = 1.5; // Default for green, yellow, etc.
+                // Make all colors bright by default, dim only specific ones
+                let intensity = 5.0; // Bright for most colors
                 const colorHex = this.color.getHex();
-                console.log('Trail color hex:', colorHex.toString(16), 'for player', this.id);
-                if (colorHex === 0xff4100 || colorHex === 0xff0000 || 
-                    colorHex === 0xff69b4 || colorHex === 0x800080 ||
-                    colorHex === 0x00ffff) {
-                    intensity = 5.0; // Much brighter for orange, red, pink, purple, cyan
-                    console.log('Setting bright intensity for color:', colorHex.toString(16));
+                if (colorHex === 0x00ff80 || colorHex === 0xffff00 || 
+                    colorHex === 0xffffff || colorHex === 0x008080) {
+                    intensity = 1.5; // Dimmer for green, yellow, white, teal
                 }
                 
                 const trailMaterial = new THREE.MeshStandardMaterial({
@@ -865,9 +861,8 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: (player.color.getHex() === 0xff4100 || player.color.getHex() === 0xff0000 || 
-                                   player.color.getHex() === 0xff69b4 || player.color.getHex() === 0x800080 ||
-                                   player.color.getHex() === 0x00ffff) ? 5.0 : 2.0,
+                emissiveIntensity: (player.color.getHex() === 0x00ff80 || player.color.getHex() === 0xffff00 || 
+                                   player.color.getHex() === 0xffffff || player.color.getHex() === 0x008080) ? 2.0 : 5.0,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
