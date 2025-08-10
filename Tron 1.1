@@ -152,6 +152,36 @@
             box-shadow: 0 0 20px #ffff00;
             transform: scale(1.05);
         }
+
+        /* Debug screen specific styles */
+        #debugScreen {
+            width: 400px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+        
+        #debugScreen .space-y-2 {
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #001a1a;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-track {
+            background: #001a1a;
+            border-radius: 4px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+        }
+        
+        #debugScreen .space-y-2::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -168,6 +198,7 @@
                 <p><strong style="color: #00ff80;">P4:</strong> 4/6 Numpad</p>
             </div>
             <p class="text-xs text-cyan-200 mb-4">Press 'C' to cycle spectators when eliminated.</p>
+            <p class="text-xs text-cyan-200 mb-4">Press 'I' to toggle debug screen.</p>
             
             <!-- Map Selection -->
             <div>
@@ -259,6 +290,28 @@
         <div id="deathMessage" class="ui-element hidden text-red-500 border-red-500" style="box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000;">
             <h2 class="text-4xl font-bold">YOU DIED</h2>
         </div>
+
+        <div id="debugScreen" class="ui-element hidden">
+            <h2 class="text-2xl font-bold mb-4 text-cyan-300">DEBUG SCREEN</h2>
+            <div class="text-left text-sm space-y-2 max-h-96 overflow-y-auto">
+                <div><strong>Game State:</strong> <span id="debugGameState">-</span></div>
+                <div><strong>Game Mode:</strong> <span id="debugGameMode">-</span></div>
+                <div><strong>Current Map:</strong> <span id="debugCurrentMap">-</span></div>
+                <div><strong>Camera Distance:</strong> <span id="debugCameraDistance">-</span></div>
+                <div><strong>Active Players:</strong> <span id="debugActivePlayers">-</span></div>
+                <div><strong>Total Trails:</strong> <span id="debugTotalTrails">-</span></div>
+                <div><strong>FPS:</strong> <span id="debugFPS">-</span></div>
+                <div><strong>Window Size:</strong> <span id="debugWindowSize">-</span></div>
+                <div><strong>Renderer Info:</strong> <span id="debugRendererInfo">-</span></div>
+                <div class="border-t border-cyan-500 pt-2 mt-2">
+                    <strong>Player Details:</strong>
+                    <div id="debugPlayerDetails" class="ml-2 space-y-1"></div>
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-cyan-200">
+                Press 'I' again to hide
+            </div>
+        </div>
     </div>
     
     <div id="spectateMessage" class="hidden" style="position: absolute; bottom: 20px; width: 100%; text-align: center; pointer-events: none;">
@@ -347,6 +400,25 @@
             document.getElementById('player3Score'),
             document.getElementById('player4Score'),
         ];
+
+        // Debug screen elements
+        const debugScreen = document.getElementById('debugScreen');
+        const debugGameState = document.getElementById('debugGameState');
+        const debugGameMode = document.getElementById('debugGameMode');
+        const debugCurrentMap = document.getElementById('debugCurrentMap');
+        const debugCameraDistance = document.getElementById('debugCameraDistance');
+        const debugActivePlayers = document.getElementById('debugActivePlayers');
+        const debugTotalTrails = document.getElementById('debugTotalTrails');
+        const debugFPS = document.getElementById('debugFPS');
+        const debugWindowSize = document.getElementById('debugWindowSize');
+        const debugRendererInfo = document.getElementById('debugRendererInfo');
+        const debugPlayerDetails = document.getElementById('debugPlayerDetails');
+        
+        // Debug variables
+        let debugVisible = false;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 0;
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -1164,6 +1236,7 @@
                 case 'numpad4': case '4': keys.p4_left = true; break;
                 case 'numpad6': case '6': keys.p4_right = true; break;
                 case 'c': cycleSpectator(); break;
+                case 'i': toggleDebugScreen(); break;
             }
         }
         function onKeyUp(event) {
@@ -1277,8 +1350,60 @@
             composer.setSize(window.innerWidth, window.innerHeight);
         }
 
+        function toggleDebugScreen() {
+            debugVisible = !debugVisible;
+            if (debugVisible) {
+                debugScreen.classList.remove('hidden');
+                updateDebugInfo();
+            } else {
+                debugScreen.classList.add('hidden');
+            }
+        }
+
+        function updateDebugInfo() {
+            if (!debugVisible) return;
+            
+            // Update debug information
+            debugGameState.textContent = gameState;
+            debugGameMode.textContent = gameMode;
+            debugCurrentMap.textContent = currentMap;
+            debugCameraDistance.textContent = cameraDistance.toFixed(2);
+            debugActivePlayers.textContent = players.filter(p => p.isAlive).length + '/' + players.length;
+            debugTotalTrails.textContent = trails.length;
+            debugFPS.textContent = fps.toFixed(1);
+            debugWindowSize.textContent = `${window.innerWidth}x${window.innerHeight}`;
+            debugRendererInfo.textContent = `${renderer.capabilities.maxTextureSize}x${renderer.capabilities.maxAnisotropy}`;
+            
+            // Update player details
+            let playerDetailsHTML = '';
+            players.forEach((player, index) => {
+                const status = player.isAlive ? '🟢' : '🔴';
+                const pos = player.mesh ? player.mesh.position : { x: 0, y: 0, z: 0 };
+                const vel = player.velocity ? player.velocity : { x: 0, y: 0, z: 0 };
+                const type = player.isAI ? 'AI' : 'Human';
+                
+                playerDetailsHTML += `
+                    <div class="text-xs">
+                        <strong>P${index + 1} (${type}):</strong> ${status} 
+                        Pos: (${pos.x.toFixed(1)}, ${pos.z.toFixed(1)}) 
+                        Vel: (${vel.x.toFixed(1)}, ${vel.z.toFixed(1)})
+                    </div>
+                `;
+            });
+            debugPlayerDetails.innerHTML = playerDetailsHTML;
+        }
+
         function animate() {
             requestAnimationFrame(animate);
+
+            // Calculate FPS
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastTime >= 1000) {
+                fps = frameCount * 1000 / (currentTime - lastTime);
+                frameCount = 0;
+                lastTime = currentTime;
+            }
 
             if (gameState === 'PLAYING') {
                 handlePlayerUpdates();
@@ -1292,6 +1417,11 @@
             
             updateCamera();
             composer.render();
+
+            // Update debug info if visible
+            if (debugVisible) {
+                updateDebugInfo();
+            }
         }
 
         init();
