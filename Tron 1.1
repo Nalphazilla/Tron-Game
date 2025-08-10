@@ -161,6 +161,49 @@
             border-radius: 2px;
             border: 1px solid #00ffff;
         }
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .invulnerability-indicator {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .invulnerability-text {
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .invulnerability-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .invulnerability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            width: 100%;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -367,8 +410,10 @@
     </div>
     
     <div id="invulnerabilityIndicator" class="invulnerability-indicator hidden">
-        <span class="invulnerability-text">INVULNERABLE</span>
-        <span class="invulnerability-timer">3.0s</span>
+        <div class="invulnerability-text">INVULNERABLE</div>
+        <div class="invulnerability-bar">
+            <div class="invulnerability-fill"></div>
+        </div>
     </div>
 
     <!-- Three.js and Post-processing scripts -->
@@ -434,6 +479,7 @@
         const playAgainButton = document.getElementById('playAgainButton');
         const backToMenuButton = document.getElementById('backToMenuButton');
         const scoreContainer = document.getElementById('scoreContainer');
+        const invulnerabilityIndicator = document.getElementById('invulnerabilityIndicator');
         const mapSelect = document.getElementById('mapSelect');
         const scoreElems = [
             document.getElementById('player1Score'),
@@ -442,7 +488,7 @@
             document.getElementById('player4Score'),
         ];
         
-        const invulnerabilityIndicator = document.getElementById('invulnerabilityIndicator');
+        
 
         function init() {
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
@@ -612,16 +658,30 @@
                 this.mesh.position.copy(this.startPosition);
                 this.mesh.rotation.y = this.startRotationY;
                 
-                // Invulnerability system
+                // Invulnerability properties
                 this.isInvulnerable = false;
                 this.invulnerabilityTimer = 0;
-                this.invulnerabilityDuration = 3000; // 3 seconds in milliseconds
+                this.invulnerabilityDuration = 180; // 3 seconds at 60fps
                 
                 if (this.isAI) {
                     this.speed = 0.41;
                     this.aiDecisionCooldown = 0;
                     this.aiCurrentTurn = 0;
                     this.aiDecisionInterval = 10; 
+                }
+            }
+
+            activateInvulnerability() {
+                this.isInvulnerable = true;
+                this.invulnerabilityTimer = this.invulnerabilityDuration;
+            }
+
+            checkInvulnerability() {
+                if (this.isInvulnerable) {
+                    this.invulnerabilityTimer--;
+                    if (this.invulnerabilityTimer <= 0) {
+                        this.isInvulnerable = false;
+                    }
                 }
             }
 
@@ -632,28 +692,58 @@
                 this.visuals.rotation.z = 0;
                 scene.add(this.mesh);
                 
-                                // Activate invulnerability on spawn
+                // Activate invulnerability on spawn
                 this.activateInvulnerability();
             }
-            
-            activateInvulnerability() {
-                this.isInvulnerable = true;
-                this.invulnerabilityTimer = Date.now();
-            }
-            
-            checkInvulnerability() {
-                if (this.isInvulnerable) {
-                    const currentTime = Date.now();
-                    if (currentTime - this.invulnerabilityTimer >= this.invulnerabilityDuration) {
-                        this.isInvulnerable = false;
-                    }
+
+            handleInvulnerableCollision(collisionType, position) {
+                if (!this.isInvulnerable) return false;
+                
+                switch(collisionType) {
+                    case 'boundary':
+                        this.handleBoundaryBounce();
+                        break;
+                    case 'obstacle':
+                        this.handleObstacleBounce();
+                        break;
+                    case 'trail':
+                        this.handleTrailBounce();
+                        break;
                 }
+                
+                createCollisionEffect(position, this.color);
+                return true;
+            }
+
+            handleBoundaryBounce() {
+                const currentPos = this.mesh.position;
+                const halfSize = gameSize / 2;
+                
+                // Bounce back from boundary
+                if (Math.abs(currentPos.x) > halfSize) {
+                    this.mesh.position.x = Math.sign(currentPos.x) * (halfSize - 1);
+                }
+                if (Math.abs(currentPos.z) > halfSize) {
+                    this.mesh.position.z = Math.sign(currentPos.z) * (halfSize - 1);
+                }
+                
+                // Reverse direction
+                this.mesh.rotation.y += Math.PI;
+            }
+
+            handleObstacleBounce() {
+                // Simple bounce back
+                this.mesh.translateZ(this.speed * 2);
+            }
+
+            handleTrailBounce() {
+                // Bounce back from trail
+                this.mesh.translateZ(this.speed * 1.5);
             }
             
             update(turnDirection, opponents) {
                 if (!this.isAlive) return;
                 
-                // Check invulnerability timer
                 this.checkInvulnerability();
                 
                 this.mesh.rotation.y += turnDirection * this.turnSpeed;
@@ -772,7 +862,7 @@
                             // If invulnerable, only collide but don't die
                             if (this.isInvulnerable || opponent.isInvulnerable) {
                                 // Create a collision effect but don't kill players
-                                this.handleInvulnerableCollision(opponent);
+                                this.handleInvulnerableCollision('trail', this.mesh.position);
                                 return;
                             } else {
                                 this.die(); 
@@ -788,7 +878,7 @@
                 if (Math.abs(headPos.x) > halfSize || Math.abs(headPos.z) > halfSize) {
                     // If invulnerable, bounce back instead of dying
                     if (this.isInvulnerable) {
-                        this.handleBoundaryBounce(headPos, halfSize);
+                        this.handleInvulnerableCollision('boundary', headPos);
                         return;
                     } else {
                         this.die(); 
@@ -806,7 +896,7 @@
                         if (playerBox.intersectsBox(obstacleBox)) {
                             // If invulnerable, bounce back instead of dying
                             if (this.isInvulnerable) {
-                                this.handleObstacleBounce(obstacle);
+                                this.handleInvulnerableCollision('obstacle', obstacle.position);
                                 return;
                             } else {
                                 this.die();
@@ -817,39 +907,11 @@
                 }
             }
             
-            handleInvulnerableCollision(opponent) {
-                // Create a visual collision effect
-                const collisionPos = this.mesh.position.clone().add(opponent.mesh.position).multiplyScalar(0.5);
-                createCollisionEffect(collisionPos, this.color);
-                
-                // Bounce both players back slightly
-                const bounceDirection = this.mesh.position.clone().sub(opponent.mesh.position).normalize();
-                this.mesh.position.add(bounceDirection.multiplyScalar(2));
-                opponent.mesh.position.sub(bounceDirection.multiplyScalar(2));
-            }
+
             
-            handleBoundaryBounce(headPos, halfSize) {
-                // Bounce back from boundaries when invulnerable
-                if (Math.abs(headPos.x) > halfSize) {
-                    this.mesh.position.x = Math.sign(headPos.x) * (halfSize - 1);
-                }
-                if (Math.abs(headPos.z) > halfSize) {
-                    this.mesh.position.z = Math.sign(headPos.z) * (halfSize - 1);
-                }
-                
-                // Create boundary bounce effect
-                createBoundaryBounceEffect(this.mesh.position, this.color);
-            }
+
             
-            handleObstacleBounce(obstacle) {
-                // Bounce back from obstacles when invulnerable
-                const obstaclePos = obstacle.position;
-                const bounceDirection = this.mesh.position.clone().sub(obstaclePos).normalize();
-                this.mesh.position.add(bounceDirection.multiplyScalar(3));
-                
-                // Create obstacle bounce effect
-                createObstacleBounceEffect(this.mesh.position, this.color);
-            }
+
 
             die() {
                 if (!this.isAlive) return;
@@ -896,44 +958,44 @@
             scene.add(explosion.mesh);
             explosions.push(explosion);
         }
-        
+
         function createCollisionEffect(position, color) {
-            // Create a small explosion-like effect for invulnerable collisions
-            const particleCount = 8;
-            const particles = new THREE.Group();
+            const effect = { lifetime: 30 };
+            const ringGeo = new THREE.RingGeometry(0.5, 2, 16);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(position);
+            ring.position.y = 0.1;
+            ring.rotation.x = -Math.PI / 2;
             
-            for (let i = 0; i < particleCount; i++) {
-                const particleGeo = new THREE.SphereGeometry(0.1, 8, 6);
-                const particleMat = new THREE.MeshStandardMaterial({
-                    color: color,
-                    emissive: color,
-                    emissiveIntensity: 2.0,
-                    toneMapped: false
-                });
+            effect.mesh = ring;
+            scene.add(effect.mesh);
+            
+            // Add to a temporary effects array for cleanup
+            if (!window.collisionEffects) window.collisionEffects = [];
+            window.collisionEffects.push(effect);
+        }
+
+        function updateCollisionEffects() {
+            if (!window.collisionEffects) return;
+            
+            for (let i = window.collisionEffects.length - 1; i >= 0; i--) {
+                const effect = window.collisionEffects[i];
+                effect.lifetime--;
+                effect.mesh.material.opacity = effect.lifetime / 30;
                 
-                const particle = new THREE.Mesh(particleGeo, particleMat);
-                particle.position.copy(position);
-                
-                // Random direction
-                const angle = (i / particleCount) * Math.PI * 2;
-                const radius = 1 + Math.random() * 2;
-                particle.position.x += Math.cos(angle) * radius;
-                particle.position.z += Math.sin(angle) * radius;
-                particle.position.y += Math.random() * 2;
-                
-                particles.add(particle);
+                if (effect.lifetime <= 0) {
+                    scene.remove(effect.mesh);
+                    effect.mesh.geometry.dispose();
+                    effect.mesh.material.dispose();
+                    window.collisionEffects.splice(i, 1);
+                }
             }
-            
-            scene.add(particles);
-            
-            // Remove particles after animation
-            setTimeout(() => {
-                scene.remove(particles);
-                particles.children.forEach(child => {
-                    child.geometry.dispose();
-                    child.material.dispose();
-                });
-            }, 1000);
         }
         
         function createBoundaryBounceEffect(position, color) {
@@ -1139,6 +1201,17 @@
                 });
             });
             announcements = [];
+            
+            // Clean up collision effects
+            if (window.collisionEffects) {
+                window.collisionEffects.forEach(effect => {
+                    scene.remove(effect.mesh);
+                    effect.mesh.geometry.dispose();
+                    effect.mesh.material.dispose();
+                });
+                window.collisionEffects = [];
+            }
+            
             players.forEach(p => scene.remove(p.mesh));
             players = [];
             gameWinner = null;
@@ -1168,10 +1241,10 @@
             let activePlayerConfigs = [];
             
             // Get selected colors from dropdowns
-            const p1Color = parseInt(p1ColorSelect.value);
-            const p2Color = parseInt(p2ColorSelect.value);
-            const p3Color = parseInt(p3ColorSelect.value);
-            const p4Color = parseInt(p4ColorSelect.value);
+            const p1Color = parseInt(p1ColorSelect.value, 16);
+            const p2Color = parseInt(p2ColorSelect.value, 16);
+            const p3Color = parseInt(p3ColorSelect.value, 16);
+            const p4Color = parseInt(p4ColorSelect.value, 16);
             
             if (gameMode === 'pvp' || gameMode === 'pva') {
                 activePlayerConfigs.push({ id: 0, color: p1Color, pos: new THREE.Vector3(-offset, startY, 0), rot: -Math.PI / 2 });
@@ -1312,45 +1385,41 @@
             // Update score colors based on selected colors
             updateScoreColors();
         }
-        
+
         function updateInvulnerabilityIndicator() {
-            // Find the human player (player 0)
-            const humanPlayer = players.find(p => p.id === 0 && p.isAlive);
+            const humanPlayer = players.find(p => p.id === 0);
+            if (!humanPlayer || !humanPlayer.isAlive) {
+                invulnerabilityIndicator.classList.add('hidden');
+                return;
+            }
             
-            if (humanPlayer && humanPlayer.isInvulnerable) {
-                const remainingTime = Math.max(0, (humanPlayer.invulnerabilityDuration - (Date.now() - humanPlayer.invulnerabilityTimer)) / 1000);
-                const timerText = remainingTime.toFixed(1) + 's';
-                
-                invulnerabilityIndicator.querySelector('.invulnerability-timer').textContent = timerText;
+            if (humanPlayer.isInvulnerable) {
                 invulnerabilityIndicator.classList.remove('hidden');
+                const fill = invulnerabilityIndicator.querySelector('.invulnerability-fill');
+                const percentage = humanPlayer.invulnerabilityTimer / humanPlayer.invulnerabilityDuration;
+                fill.style.width = `${percentage * 100}%`;
                 
                 // Change color based on remaining time
-                if (remainingTime > 2) {
-                    invulnerabilityIndicator.style.borderColor = '#00ff00';
-                    invulnerabilityIndicator.style.color = '#00ff00';
-                    invulnerabilityIndicator.style.textShadow = '0 0 10px #00ff00';
-                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #00ff00';
-                } else if (remainingTime > 1) {
-                    invulnerabilityIndicator.style.borderColor = '#ffff00';
-                    invulnerabilityIndicator.style.color = '#ffff00';
-                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ffff00';
-                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #ffff00';
+                if (percentage > 0.6) {
+                    fill.style.background = 'linear-gradient(90deg, #00ff00, #00cc00)';
+                    fill.style.boxShadow = '0 0 10px #00ff00';
+                } else if (percentage > 0.3) {
+                    fill.style.background = 'linear-gradient(90deg, #ffff00, #cccc00)';
+                    fill.style.boxShadow = '0 0 10px #ffff00';
                 } else {
-                    invulnerabilityIndicator.style.borderColor = '#ff0000';
-                    invulnerabilityIndicator.style.color = '#ff0000';
-                    invulnerabilityIndicator.style.textShadow = '0 0 10px #ff0000';
-                    invulnerabilityIndicator.style.boxShadow = '0 0 20px #ff0000';
+                    fill.style.background = 'linear-gradient(90deg, #ff0000, #cc0000)';
+                    fill.style.boxShadow = '0 0 10px #ff0000';
                 }
             } else {
                 invulnerabilityIndicator.classList.add('hidden');
             }
         }
-
+        
         function updateScoreColors() {
-            const p1Color = parseInt(p1ColorSelect.value);
-            const p2Color = parseInt(p2ColorSelect.value);
-            const p3Color = parseInt(p3ColorSelect.value);
-            const p4Color = parseInt(p4ColorSelect.value);
+            const p1Color = parseInt(p1ColorSelect.value, 16);
+            const p2Color = parseInt(p2ColorSelect.value, 16);
+            const p3Color = parseInt(p3ColorSelect.value, 16);
+            const p4Color = parseInt(p4ColorSelect.value, 16);
             
             // Convert hex to CSS color
             const hexToCSS = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
@@ -1510,6 +1579,7 @@
             
             updateTrails();
             updateExplosions();
+            updateCollisionEffects(); // Call the new collision effect update function
             updateAnnouncements();
             updateInvulnerabilityIndicator();
             
