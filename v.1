@@ -532,7 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: 2.75, 
+                emissiveIntensity: 1.0, 
                 toneMapped: false 
             });
 
@@ -705,7 +705,7 @@
 
             createTrail() {
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: 1.4,
+                    color: this.color, emissive: this.color, emissiveIntensity: 1.0,
                     transparent: true, opacity: 1.0, side: THREE.DoubleSide,
                     toneMapped: false
                 });
@@ -852,7 +852,7 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: 1.4,
+                emissiveIntensity: 1.0,
                 toneMapped: false
             });
             const geometry = new THREE.PlaneGeometry(canvas.width / 20, canvas.height / 20);
