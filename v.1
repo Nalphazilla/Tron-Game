@@ -124,15 +124,15 @@
             background-color: #001a1a;
             color: #00ffff;
             border: 1px solid #00ffff;
-            padding: 0.25rem;
+            padding: 0.5rem;
             border-radius: 0.25rem;
             font-family: 'Orbitron', sans-serif;
             font-size: 0.75rem;
-            min-width: 80px;
+            min-width: 60px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
         }
         .color-dropdown-button:focus {
             outline: none;
@@ -144,7 +144,7 @@
             background-color: #001a1a;
             border: 1px solid #00ffff;
             border-radius: 0.25rem;
-            min-width: 120px;
+            min-width: 80px;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
             z-index: 1000;
         }
@@ -152,21 +152,22 @@
             display: block;
         }
         .color-option {
-            padding: 0.5rem;
+            padding: 0.25rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
             color: #00ffff;
         }
         .color-option:hover {
             background-color: #003333;
         }
         .color-preview {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-            border: 1px solid #00ffff;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 8px currentColor;
         }
     </style>
 </head>
@@ -208,159 +209,127 @@
             <!-- Color Selection -->
             <div>
                 <label class="block text-cyan-300 mb-2">PLAYER COLORS</label>
-                <div class="grid grid-cols-3 gap-2 mb-4">
-                    <div class="flex items-center space-x-2">
+                <div class="space-y-2 mb-4">
+                    <div id="p1ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P1:</span>
                         <div class="color-dropdown">
                             <button class="color-dropdown-button" onclick="toggleColorDropdown('p1')">
                                 <div class="color-preview" id="p1ColorPreview" style="background-color: #00ffff;"></div>
-                                <span id="p1ColorText">Cyan</span>
                             </button>
                             <div class="color-dropdown-content" id="p1ColorDropdown">
                                 <div class="color-option" onclick="selectColor('p1', '0x00ffff', '#00ffff', 'Cyan')">
                                     <div class="color-preview" style="background-color: #00ffff;"></div>
-                                    <span>Cyan</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0xff69b4', '#ff69b4', 'Pink')">
                                     <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                    <span>Pink</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0x800080', '#800080', 'Purple')">
                                     <div class="color-preview" style="background-color: #800080;"></div>
-                                    <span>Purple</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0xffff00', '#ffff00', 'Yellow')">
                                     <div class="color-preview" style="background-color: #ffff00;"></div>
-                                    <span>Yellow</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0xffffff', '#ffffff', 'White')">
                                     <div class="color-preview" style="background-color: #ffffff;"></div>
-                                    <span>White</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0x008080', '#008080', 'Teal')">
                                     <div class="color-preview" style="background-color: #008080;"></div>
-                                    <span>Teal</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p1', '0xc0c0c0', '#c0c0c0', 'Silver')">
                                     <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                    <span>Silver</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div id="p2ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P2:</span>
                         <div class="color-dropdown">
                             <button class="color-dropdown-button" onclick="toggleColorDropdown('p2')">
                                 <div class="color-preview" id="p2ColorPreview" style="background-color: #ff4100;"></div>
-                                <span id="p2ColorText">Orange</span>
                             </button>
                             <div class="color-dropdown-content" id="p2ColorDropdown">
                                 <div class="color-option" onclick="selectColor('p2', '0xff4100', '#ff4100', 'Orange')">
                                     <div class="color-preview" style="background-color: #ff4100;"></div>
-                                    <span>Orange</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0xff69b4', '#ff69b4', 'Pink')">
                                     <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                    <span>Pink</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0x800080', '#800080', 'Purple')">
                                     <div class="color-preview" style="background-color: #800080;"></div>
-                                    <span>Purple</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0xffff00', '#ffff00', 'Yellow')">
                                     <div class="color-preview" style="background-color: #ffff00;"></div>
-                                    <span>Yellow</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0xffffff', '#ffffff', 'White')">
                                     <div class="color-preview" style="background-color: #ffffff;"></div>
-                                    <span>White</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0x008080', '#008080', 'Teal')">
                                     <div class="color-preview" style="background-color: #008080;"></div>
-                                    <span>Teal</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p2', '0xc0c0c0', '#c0c0c0', 'Silver')">
                                     <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                    <span>Silver</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                                        <div id="p3ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P3:</span>
                         <div class="color-dropdown">
                             <button class="color-dropdown-button" onclick="toggleColorDropdown('p3')">
                                 <div class="color-preview" id="p3ColorPreview" style="background-color: #ff0000;"></div>
-                                <span id="p3ColorText">Red</span>
                             </button>
                             <div class="color-dropdown-content" id="p3ColorDropdown">
                                 <div class="color-option" onclick="selectColor('p3', '0xff0000', '#ff0000', 'Red')">
                                     <div class="color-preview" style="background-color: #ff0000;"></div>
-                                    <span>Red</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0xff69b4', '#ff69b4', 'Pink')">
                                     <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                    <span>Pink</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0x800080', '#800080', 'Purple')">
                                     <div class="color-preview" style="background-color: #800080;"></div>
-                                    <span>Purple</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0xffff00', '#ffff00', 'Yellow')">
                                     <div class="color-preview" style="background-color: #ffff00;"></div>
-                                    <span>Yellow</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0xffffff', '#ffffff', 'White')">
                                     <div class="color-preview" style="background-color: #ffffff;"></div>
-                                    <span>White</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0x008080', '#008080', 'Teal')">
                                     <div class="color-preview" style="background-color: #008080;"></div>
-                                    <span>Teal</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p3', '0xc0c0c0', '#c0c0c0', 'Silver')">
                                     <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                    <span>Silver</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div id="p4ColorContainer" class="flex items-center space-x-2">
                         <span class="text-xs text-cyan-200">P4:</span>
                         <div class="color-dropdown">
                             <button class="color-dropdown-button" onclick="toggleColorDropdown('p4')">
                                 <div class="color-preview" id="p4ColorPreview" style="background-color: #00ff80;"></div>
-                                <span id="p4ColorText">Green</span>
                             </button>
                             <div class="color-dropdown-content" id="p4ColorDropdown">
                                 <div class="color-option" onclick="selectColor('p4', '0x00ff80', '#00ff80', 'Green')">
                                     <div class="color-preview" style="background-color: #00ff80;"></div>
-                                    <span>Green</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0xff69b4', '#ff69b4', 'Pink')">
                                     <div class="color-preview" style="background-color: #ff69b4;"></div>
-                                    <span>Pink</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0x800080', '#800080', 'Purple')">
                                     <div class="color-preview" style="background-color: #800080;"></div>
-                                    <span>Purple</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0xffff00', '#ffff00', 'Yellow')">
                                     <div class="color-preview" style="background-color: #ffff00;"></div>
-                                    <span>Yellow</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0xffffff', '#ffffff', 'White')">
                                     <div class="color-preview" style="background-color: #ffffff;"></div>
-                                    <span>White</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0x008080', '#008080', 'Teal')">
                                     <div class="color-preview" style="background-color: #008080;"></div>
-                                    <span>Teal</span>
                                 </div>
                                 <div class="color-option" onclick="selectColor('p4', '0xc0c0c0', '#c0c0c0', 'Silver')">
                                     <div class="color-preview" style="background-color: #c0c0c0;"></div>
-                                    <span>Silver</span>
                                 </div>
                             </div>
                         </div>
@@ -499,10 +468,11 @@
             playAgainButton.addEventListener('click', resetGame);
             backToMenuButton.addEventListener('click', backToMenu);
             mapSelect.addEventListener('change', (e) => { currentMap = e.target.value; });
-            modeSelect.addEventListener('change', (e) => { gameMode = e.target.value; });
+            modeSelect.addEventListener('change', (e) => { gameMode = e.target.value; updatePlayerColorVisibility(); });
             
             // Initialize default colors
             updateScoreColors();
+            updatePlayerColorVisibility(); // Call this to set initial visibility
 
             animate();
         }
@@ -528,9 +498,8 @@
             else if (player === 'p3') p3ColorValue = parseInt(hexValue);
             else if (player === 'p4') p4ColorValue = parseInt(hexValue);
             
-            // Update the preview and text
+            // Update the preview
             document.getElementById(player + 'ColorPreview').style.backgroundColor = cssColor;
-            document.getElementById(player + 'ColorText').textContent = colorName;
             
             // Close dropdown
             document.getElementById(player + 'ColorDropdown').classList.remove('show');
@@ -547,6 +516,30 @@
                 });
             }
         });
+
+        function updatePlayerColorVisibility() {
+            const p1Container = document.getElementById('p1ColorContainer');
+            const p2Container = document.getElementById('p2ColorContainer');
+            const p3Container = document.getElementById('p3ColorContainer');
+            const p4Container = document.getElementById('p4ColorContainer');
+            
+            // Hide all first
+            p1Container.style.display = 'none';
+            p2Container.style.display = 'none';
+            p3Container.style.display = 'none';
+            p4Container.style.display = 'none';
+            
+            // Show relevant players based on game mode
+            if (gameMode === 'pvp' || gameMode === 'pva') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+            } else if (gameMode === '1v3AI' || gameMode === '4FFA') {
+                p1Container.style.display = 'block';
+                p2Container.style.display = 'block';
+                p3Container.style.display = 'block';
+                p4Container.style.display = 'block';
+            }
+        }
 
         function createEnvironment() {
             const floorGeo = new THREE.PlaneGeometry(gameSize, gameSize);
@@ -608,7 +601,12 @@
         function createLightCycleModel(color) {
             const group = new THREE.Group();
             const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x101010, metalness: 0.9, roughness: 0.3 });
-            const lightMaterial = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 3, toneMapped: false });
+            const lightMaterial = new THREE.MeshStandardMaterial({ 
+                color: color, 
+                emissive: color, 
+                emissiveIntensity: 4, 
+                toneMapped: false 
+            });
 
             const bodyCurve = new THREE.CatmullRomCurve3([
                 new THREE.Vector3(0, 0.5, -2.2), new THREE.Vector3(0, 1.0, -1.0),
@@ -643,7 +641,7 @@
             glow.rotation.x = Math.PI / 2;
             
             frontWheel.add(glow.clone());
-            backWheel.add(glow.clone())
+            backWheel.add(glow.clone());
             
             const collisionBoxGeo = new THREE.BoxGeometry(0.8, 1.5, 5);
             const collisionBoxMat = new THREE.MeshBasicMaterial({ visible: false });
@@ -779,8 +777,9 @@
 
             createTrail() {
                 const trailMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color, emissive: this.color, emissiveIntensity: 1.5,
-                    transparent: true, opacity: 1.0, side: THREE.DoubleSide
+                    color: this.color, emissive: this.color, emissiveIntensity: 2.0,
+                    transparent: true, opacity: 1.0, side: THREE.DoubleSide,
+                    toneMapped: false
                 });
                 const wallHeight = 0.9;
                 const trailGeo = new THREE.BoxGeometry(0.2, wallHeight, 1.5);
