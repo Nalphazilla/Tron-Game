@@ -532,7 +532,7 @@
             const lightMaterial = new THREE.MeshStandardMaterial({ 
                 color: color, 
                 emissive: color, 
-                emissiveIntensity: (color.getHex() === 0x00ffff || color.getHex() === 0x800080) ? 20.0 : 
+                emissiveIntensity: (color.getHex() === 0x008080 || color.getHex() === 0x800080) ? 20.0 : 
                                   (color.getHex() === 0xff4100 || color.getHex() === 0xff0000) ? 8.0 :
                                   (color.getHex() === 0x00ff80 || color.getHex() === 0xffff00 || 
                                    color.getHex() === 0xffffff || color.getHex() === 0x0000ff) ? 2.0 : 4.0, 
@@ -711,8 +711,8 @@
                 let intensity = 2.0; // Default
                 const colorHex = this.color.getHex();
                 
-                if (colorHex === 0x00ffff || colorHex === 0x800080) {
-                    intensity = 10.0; // Purple & Cyan x5
+                if (colorHex === 0x008080 || colorHex === 0x800080) {
+                    intensity = 10.0; // Teal & Purple x5
                 } else if (colorHex === 0xff4100 || colorHex === 0xff0000) {
                     intensity = 4.0; // Orange & Red x2
                 } else if (colorHex === 0x00ff80 || colorHex === 0xffff00 || 
@@ -868,7 +868,7 @@
                 opacity: 1.0,
                 color: 0xffffff,
                 emissive: player.color,
-                emissiveIntensity: (player.color.getHex() === 0x00ffff || player.color.getHex() === 0x800080) ? 15.0 : 
+                emissiveIntensity: (player.color.getHex() === 0x008080 || player.color.getHex() === 0x800080) ? 15.0 : 
                                   (player.color.getHex() === 0xff4100 || player.color.getHex() === 0xff0000) ? 6.0 :
                                   (player.color.getHex() === 0x00ff80 || player.color.getHex() === 0xffff00 || 
                                    player.color.getHex() === 0xffffff || player.color.getHex() === 0x0000ff) ? 1.5 : 3.0,
